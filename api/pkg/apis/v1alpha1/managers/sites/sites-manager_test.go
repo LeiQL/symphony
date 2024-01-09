@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-package activations
+package sites
 
 import (
 	"context"
@@ -15,41 +15,46 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateGetDeleteActivationSpec(t *testing.T) {
+// write test case to create a SitesSpec using the manager
+func TestCreateGetDeleteTargetsSpec(t *testing.T) {
 	stateProvider := &memorystate.MemoryStateProvider{}
 	stateProvider.Init(memorystate.MemoryStateProviderConfig{})
-	manager := ActivationsManager{
+	manager := SitesManager{
 		StateProvider: stateProvider,
 	}
-	err := manager.UpsertSpec(context.Background(), "test", model.ActivationSpec{})
+	err := manager.UpsertSpec(context.Background(), "test", model.SiteSpec{})
 	assert.Nil(t, err)
 	spec, err := manager.GetSpec(context.Background(), "test")
 	assert.Nil(t, err)
 	assert.Equal(t, "test", spec.Id)
+	specLists, err := manager.ListSpec(context.Background())
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(specLists))
+	assert.Equal(t, "test", specLists[0].Id)
 	err = manager.DeleteSpec(context.Background(), "test")
 	assert.Nil(t, err)
+	spec, err = manager.GetSpec(context.Background(), "test")
+	assert.NotNil(t, err)
 }
 
-func TestCleanupOldActivationSpec(t *testing.T) {
+func TestUpdateTargetStatus(t *testing.T) {
 	stateProvider := &memorystate.MemoryStateProvider{}
 	stateProvider.Init(memorystate.MemoryStateProviderConfig{})
-
-	manager := ActivationsManager{
+	manager := SitesManager{
 		StateProvider: stateProvider,
 	}
-	cleanupmanager := ActivationsCleanupManager{
-		ActivationsManager: manager,
-		RetentionInMinutes: 0,
-	}
-	err := manager.UpsertSpec(context.Background(), "test", model.ActivationSpec{})
+	var state model.SiteState
+	state.Id = "test"
+	state.Spec = &model.SiteSpec{}
+	var status model.SiteStatus
+	status.IsOnline = true
+	state.Id = "test"
+	state.Status = &status
+	err := manager.ReportState(context.Background(), state)
 	assert.Nil(t, err)
 	spec, err := manager.GetSpec(context.Background(), "test")
 	assert.Nil(t, err)
 	assert.Equal(t, "test", spec.Id)
-	err = manager.ReportStatus(context.Background(), "test", model.ActivationStatus{Status: 9996})
-	assert.Nil(t, err)
-	errList := cleanupmanager.Poll()
-	assert.Empty(t, errList)
-	_, err = manager.GetSpec(context.Background(), "test")
-	assert.NotNil(t, err)
+	assert.Equal(t, true, spec.Status.IsOnline)
+	assert.NotEqual(t, "", spec.Status.LastReported)
 }
