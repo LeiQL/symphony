@@ -16,6 +16,7 @@ jobs:
     env:
       TEST_KUBECTL: yes
       TEST_MINIKUBE_ENABLED: yes
+      TEST_MQTT_LOCAL_ENABLED: yes
     steps:
     - uses: actions/checkout@v3
 
