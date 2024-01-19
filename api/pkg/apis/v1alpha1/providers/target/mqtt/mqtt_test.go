@@ -509,16 +509,15 @@ func TestLocalApplyGet(t *testing.T) {
 			response.State = v1alpha2.OK
 		}
 		data, _ := json.Marshal(response)
-		token := c.Publish(config.ResponseTopic, 0, false, data) //sending COARequest directly doesn't seem to work
+		token := c.Publish(config.ResponseTopic, 0, false, data)
 		token.Wait()
-
 	}); token.Wait() && token.Error() != nil {
 		if token.Error().Error() != "subscription exists" {
 			panic(token.Error())
 		}
 	}
 
-	_, err = provider.Apply(context.Background(), model.DeploymentSpec{}, model.DeploymentStep{}, false) //TODO: this is probably broken: the step should contain at least a component
+	_, err = provider.Apply(context.Background(), model.DeploymentSpec{}, model.DeploymentStep{}, false)
 	assert.Nil(t, err)
 	arr, err := provider.Get(context.Background(), model.DeploymentSpec{}, nil)
 	assert.Nil(t, err)
