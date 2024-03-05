@@ -10,7 +10,6 @@ kind: Catalog
 metadata:
   name: hq
 spec:  
-  siteId: hq
   type: asset
   name: hq
   properties:
@@ -36,7 +35,6 @@ kind: Catalog
 metadata:
   name: edges
 spec:  
-  siteId: hq
   type: edge
   name: edges
   properties:
@@ -54,7 +52,6 @@ kind: Catalog
 metadata:
   name: app-config
 spec:  
-  siteId: hq
   type: config
   name: app-config
   parentName: global-config

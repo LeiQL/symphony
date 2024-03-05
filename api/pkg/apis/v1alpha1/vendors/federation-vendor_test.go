@@ -374,9 +374,8 @@ func TestFederationOnSyncGet(t *testing.T) {
 			Name: "catalog1",
 		},
 		Spec: &model.CatalogSpec{
-			SiteId: vendor.Config.SiteInfo.SiteId,
-			Name:   "catalog1",
-			Type:   "catalog",
+			Name: "catalog1",
+			Type: "catalog",
 			Properties: map[string]interface{}{
 				"property1": "value1",
 				"property2": "value2",
@@ -471,9 +470,8 @@ func TestFederationOnK8SHook(t *testing.T) {
 			Name: "catalog1",
 		},
 		Spec: &model.CatalogSpec{
-			SiteId: vendor.Config.SiteInfo.SiteId,
-			Name:   "catalog1",
-			Type:   "catalog",
+			Name: "catalog1",
+			Type: "catalog",
 			Properties: map[string]interface{}{
 				"property1": "value1",
 				"property2": "value2",

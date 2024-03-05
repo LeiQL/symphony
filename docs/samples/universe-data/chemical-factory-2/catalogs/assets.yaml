@@ -2,8 +2,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: hq
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: hq
   properties:
@@ -22,8 +21,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: infrastructure
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: infrastructure
   properties:
@@ -34,8 +32,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: l3
-spec:  
-  siteId: hq
+spec: 
   type: asset
   name: l3
   properties:
@@ -46,8 +43,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: l4
-spec:  
-  siteId: hq
+spec: 
   type: asset
   name: l4
   properties:
@@ -58,8 +54,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: use-cases
-spec:  
-  siteId: hq
+spec: 
   type: asset
   name: use-cases
   properties:
@@ -70,8 +65,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: csad
-spec:  
-  siteId: hq
+spec: 
   type: asset
   name: csad
   properties:
@@ -82,8 +76,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: site
-spec:  
-  siteId: hq
+spec: 
   type: asset
   name: site
   properties:
@@ -94,8 +87,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: line-a
-spec:  
-  siteId: hq
+spec: 
   type: asset
   name: line-a
   properties:
@@ -106,8 +98,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: line-b
-spec:  
-  siteId: hq
+spec: 
   type: asset
   name: line-b
   properties:

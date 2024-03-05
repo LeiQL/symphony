@@ -2,8 +2,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: hq
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: hq
   properties:
@@ -22,8 +21,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: tokyo
-spec:  
-  siteId: tokyo
+spec:
   type: asset
   name: tokyo
   properties:
@@ -42,8 +40,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: new-york
-spec:  
-  siteId: new-york
+spec:
   type: asset
   name: new-york
   properties:
@@ -62,8 +59,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: munchen
-spec:  
-  siteId: munchen
+spec:
   type: asset
   name: munchen
   properties:
@@ -82,8 +78,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: hq-adr
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: hq-adr
   properties:
@@ -104,8 +99,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: hq-arc-1
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: hq-arc-1
   properties:
@@ -126,8 +120,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: hq-arc-2
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: hq-arc-2
   properties:
@@ -148,8 +141,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: hq-doe-site
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: hq-doe-site
   properties:
@@ -170,8 +162,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: hq-iot-hub
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: hq-iot-hub
   properties:
@@ -192,8 +183,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: area-1
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: area-1
   properties:
@@ -204,8 +194,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: area-2
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: area-2
   properties:
@@ -216,8 +205,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: line-1
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: line-1
   properties:
@@ -228,8 +216,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: line-2
-spec:  
-  siteId: hq
+spec:
   type: asset
   name: line-2
   properties:

@@ -2,8 +2,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: influx-db-config
-spec:  
-  siteId: hq
+spec:
   type: config
   name: influx-db-config
   properties:
@@ -19,8 +18,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: grafana-config
-spec:  
-  siteId: hq
+spec:
   type: config
   name: grafana-config
   properties:
@@ -34,8 +32,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: e4k-config
-spec:  
-  siteId: hq
+spec:
   type: config
   name: e4k-config
   properties:
@@ -49,8 +46,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: bluefin-config
-spec:  
-  siteId: hq
+spec:
   type: config
   name: bluefin-config
   properties:
@@ -64,8 +60,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: ai-config
-spec:  
-  siteId: hq
+spec:
   type: config
   name: ai-config
   metadata:
@@ -79,8 +74,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: ai-config-site
-spec:  
-  siteId: hq
+spec:
   type: config
   name: ai-config-site
   parentName: ai-config
@@ -94,8 +88,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: ai-config-line
-spec:  
-  siteId: hq
+spec:
   type: config
   name: ai-config-line
   metadata:
@@ -108,8 +101,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: combined
-spec:  
-  siteId: hq
+spec:
   type: config
   name: combined  
   properties:
@@ -126,8 +118,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: combined-1
-spec:  
-  siteId: hq
+spec:
   type: config
   name: combined-1  
   properties:
@@ -138,8 +129,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: combined-2
-spec:  
-  siteId: hq
+spec: 
   type: config
   name: combined-2  
   properties:
@@ -150,8 +140,7 @@ apiVersion: federation.symphony/v1
 kind: Catalog
 metadata:
   name: external
-spec:  
-  siteId: hq
+spec:
   type: config
   name: external  
   properties:

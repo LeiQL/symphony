@@ -156,7 +156,6 @@ func InitializeMockSymphonyAPI() *httptest.Server {
 				},
 				Spec: &model.CatalogSpec{
 					Name:       "catalog1",
-					SiteId:     "fake",
 					Generation: "1",
 					ParentName: "fakeparent",
 				},

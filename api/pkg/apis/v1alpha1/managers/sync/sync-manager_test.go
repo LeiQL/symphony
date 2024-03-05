@@ -115,9 +115,8 @@ func InitiazlizeMockSymphonyAPI(siteId string) *httptest.Server {
 							Name: "catalog1",
 						},
 						Spec: &model.CatalogSpec{
-							SiteId: "parent",
-							Name:   "catalog1",
-							Type:   "Instance",
+							Name: "catalog1",
+							Type: "Instance",
 							Properties: map[string]interface{}{
 								"foo": "bar",
 							},
