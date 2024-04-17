@@ -59,7 +59,7 @@ func (t *SolutionsManager) DeleteState(ctx context.Context, name string, namespa
 		rootResource = parts[0]
 		version = parts[1]
 	} else {
-		return v1alpha2.NewCOAError(nil, fmt.Sprintf("Name is invalid does not match name in request (%s)", name), v1alpha2.BadRequest)
+		return v1alpha2.NewCOAError(nil, fmt.Sprintf("Solution name is invalid in the request (%s)", name), v1alpha2.BadRequest)
 	}
 
 	id := rootResource + "-" + version
@@ -99,15 +99,20 @@ func (t *SolutionsManager) UpsertState(ctx context.Context, name string, state m
 		rootResource = state.Spec.RootResource
 	}
 
-	state.ObjectMeta.Labels["rootResource"] = rootResource
-	state.ObjectMeta.Labels["version"] = version
+	refreshLabels := false
+	if state.ObjectMeta.Labels == nil || state.ObjectMeta.Labels["version"] == "" || state.ObjectMeta.Labels["rootResource"] == "" {
+		state.ObjectMeta.Labels["rootResource"] = rootResource
+		state.ObjectMeta.Labels["version"] = version
+		refreshLabels = true
+	}
 
 	body := map[string]interface{}{
-		"apiVersion":   model.SolutionGroup + "/v1",
-		"kind":         "Solution",
-		"metadata":     state.ObjectMeta,
-		"spec":         state.Spec,
-		"rootResource": rootResource,
+		"apiVersion":    model.SolutionGroup + "/v1",
+		"kind":          "Solution",
+		"metadata":      state.ObjectMeta,
+		"spec":          state.Spec,
+		"rootResource":  rootResource,
+		"refreshLabels": refreshLabels,
 	}
 
 	upsertRequest := states.UpsertRequest{

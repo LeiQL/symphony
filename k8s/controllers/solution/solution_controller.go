@@ -9,6 +9,7 @@ package solution
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -58,15 +59,28 @@ func (r *SolutionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	name := solution.Spec.RootResource
 	solutionName := name + ":" + version
 	jData, _ := json.Marshal(solution)
+	log.Info(fmt.Sprintf("Reconcile Solution: %v %v", solutionName, version))
+	log.Info(fmt.Sprintf("Reconcile Solution jdata: %v", solution))
+
+	log.Info("Solution.Labels:" + solution.Labels["version"])
+
 	if solution.ObjectMeta.DeletionTimestamp.IsZero() { // update
-		err := api_utils.UpsertSolution(ctx, "http://symphony-service:8080/v1alpha2/", solutionName, "admin", "", jData, req.Namespace)
-		if err != nil {
-			return ctrl.Result{}, err
+		_, exists := solution.Labels["version"]
+		if exists {
+			err := api_utils.UpsertSolution(ctx, "http://symphony-service:8080/v1alpha2/", solutionName, "admin", "", jData, req.Namespace)
+			if err != nil {
+				log.Error(err, "Upsert solution failed")
+				return ctrl.Result{}, nil
+			}
 		}
+
 	} else { // delete
+		value, exists := solution.Labels["tag"]
+		if exists && value == "latest" {
 		err := api_utils.DeleteSolution(ctx, "http://symphony-service:8080/v1alpha2/", solutionName, "admin", "", req.Namespace)
 		if err != nil {
-			return ctrl.Result{}, err
+			log.Error(err, "Delete solution failed")
+			return ctrl.Result{}, nil
 		}
 	}
 

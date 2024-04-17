@@ -449,7 +449,7 @@ func GetSolution(context context.Context, baseUrl string, solution string, user 
 		return ret, errors.New("invalid solution name")
 	}
 
-	path := "solutions/" + url.QueryEscape(name) + url.QueryEscape(version)
+	path := "solutions/" + url.QueryEscape(name) + "/" + url.QueryEscape(version)
 	path = path + "?namespace=" + url.QueryEscape(namespace)
 	response, err := callRestAPI(context, baseUrl, path, "GET", nil, token)
 	if err != nil {
@@ -480,7 +480,7 @@ func UpsertSolution(context context.Context, baseUrl string, solution string, us
 		return errors.New("invalid solution name")
 	}
 
-	path := "solutions/" + url.QueryEscape(name) + url.QueryEscape(version)
+	path := "solutions/" + url.QueryEscape(name) + "/" + url.QueryEscape(version)
 	path = path + "?namespace=" + url.QueryEscape(namespace)
 	_, err = callRestAPI(context, baseUrl, path, "POST", payload, token)
 	if err != nil {
@@ -506,7 +506,7 @@ func DeleteSolution(context context.Context, baseUrl string, solution string, us
 		return errors.New("invalid solution name")
 	}
 
-	path := "solutions/" + url.QueryEscape(name) + url.QueryEscape(version)
+	path := "solutions/" + url.QueryEscape(name) + "/" + url.QueryEscape(version)
 	path = path + "?namespace=" + url.QueryEscape(namespace)
 	_, err = callRestAPI(context, baseUrl, path, "DELETE", nil, token)
 	if err != nil {
