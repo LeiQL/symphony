@@ -90,6 +90,7 @@ func (c *SolutionsVendor) onSolutions(request v1alpha2.COARequest) v1alpha2.COAR
 	version := request.Parameters["__version"]
 	rootResource := request.Parameters["__name"]
 	id := rootResource + "-" + version
+	uLog.Infof("V (Solutions): >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> id ", id)
 
 	switch request.Method {
 	case fasthttp.MethodGet:

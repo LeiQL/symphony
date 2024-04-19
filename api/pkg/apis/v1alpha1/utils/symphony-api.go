@@ -472,6 +472,8 @@ func UpsertSolution(context context.Context, baseUrl string, solution string, us
 	var name string
 	var version string
 
+	log.Infof("Symphony API UpsertSolution, solution: %s namespace: %s", solution, namespace)
+
 	parts := strings.Split(solution, ":")
 	if len(parts) == 2 {
 		name = parts[0]
@@ -479,6 +481,8 @@ func UpsertSolution(context context.Context, baseUrl string, solution string, us
 	} else {
 		return errors.New("invalid solution name")
 	}
+
+	log.Infof("Symphony API UpsertSolution, parts: %s, %s", parts[0], parts[1])
 
 	path := "solutions/" + url.QueryEscape(name) + "/" + url.QueryEscape(version)
 	path = path + "?namespace=" + url.QueryEscape(namespace)

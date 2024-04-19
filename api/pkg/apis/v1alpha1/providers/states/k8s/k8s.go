@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -188,9 +189,12 @@ func (s *K8sStateProvider) Upsert(ctx context.Context, entry states.UpsertReques
 		namespace = "default"
 	}
 
+	sLog.Info("  P (K8s State): erefreshStr >>>>>>>>>>>>>>>>>>>>  %v ", refreshStr)
+
 	var refreshLabels bool
 	refreshLabels, err = strconv.ParseBool(refreshStr)
 	if err != nil {
+		sLog.Info("  P (K8s State): error parse >>>>>>>>>>>>>>>>>>>>  %v", err)
 		refreshLabels = false
 	}
 	sLog.Info("  P (K8s State): upsert state refreshLabels>>>>>>>>>>>>>>>>>>>>  %v , %v", refreshLabels, namespace)
@@ -313,9 +317,13 @@ func (s *K8sStateProvider) Upsert(ctx context.Context, entry states.UpsertReques
 			item.SetLabels(labels)
 
 			_, exists := labels["tag"]
+			sLog.Errorf("  P (K8s State): >>>>>>>>> get tag label: efreshLabels, exists, rootResource %v, %v, %v", refreshLabels, exists, rootResource)
+
 			if refreshLabels && !exists {
 				latestFilterValue := "tag=latest"
 				labelSelector := "rootResource=" + rootResource + "," + latestFilterValue
+				sLog.Errorf("  P (K8s State): >>>>>>>>> refresh and not exist: %v", labelSelector)
+
 				listOptions := metav1.ListOptions{
 					LabelSelector: labelSelector,
 				}
@@ -331,10 +339,24 @@ func (s *K8sStateProvider) Upsert(ctx context.Context, entry states.UpsertReques
 				needTag := true
 				currentItemTime := item.GetCreationTimestamp().Time
 				for _, v := range items.Items {
+					sLog.Infof("  P (K8s State): a>>>>>>>>>>>>> v.GetCreationTimestamp() %v ", v.GetCreationTimestamp())
 					if currentItemTime.Before(v.GetCreationTimestamp().Time) {
 						needTag = false
+					} else {
+						labels := v.GetLabels()
+						delete(labels, "tag")
+						v.SetLabels(labels)
+
+						_, err := s.DynamicClient.Resource(resourceId).Namespace(namespace).Update(ctx, &v, metav1.UpdateOptions{})
+						if err != nil {
+							sLog.Errorf("  P (K8s State): failed to remove latest label from obj %s in namespace %s: %v ", v.GetName(), err)
+							return "", err
+						} else {
+							sLog.Infof("  P (K8s State): remove latest label from object in namespace %s: %v ", v.GetName(), namespace, err)
+						}
 					}
 				}
+				sLog.Infof("  P (K8s State): a>>>>>>>>>>>>> needtag %s ", needTag)
 
 				if needTag {
 					if metadata.Labels == nil {
@@ -342,14 +364,7 @@ func (s *K8sStateProvider) Upsert(ctx context.Context, entry states.UpsertReques
 					}
 					metadata.Labels["tag"] = "latest"
 					item.SetLabels(metadata.Labels)
-
-					_, err = s.DynamicClient.Resource(resourceId).Namespace(namespace).Update(ctx, item, metav1.UpdateOptions{})
-					if err != nil {
-						sLog.Errorf("  P (K8s State): failed to add labels for obj %s in namespace %s: %v ", item.GetName(), err)
-						return "", err
-					} else {
-						sLog.Infof("  P (K8s State): add labels %s from object %s in namespace %s: %v ", metadata.Labels["tag"], item.GetName(), namespace, err)
-					}
+					sLog.Infof("  P (K8s State): a>>>>>>>>>>>>> set latest", needTag)
 				}
 			}
 		}
@@ -358,7 +373,7 @@ func (s *K8sStateProvider) Upsert(ctx context.Context, entry states.UpsertReques
 
 			_, err = s.DynamicClient.Resource(resourceId).Namespace(namespace).Update(ctx, item, metav1.UpdateOptions{})
 			if err != nil {
-				sLog.Errorf("  P (K8s State): failed to update object: %v", err)
+				sLog.Errorf("  P (K8s State): failed to update object for spec: %v", err)
 				return "", err
 			}
 		}
@@ -376,7 +391,7 @@ func (s *K8sStateProvider) Upsert(ctx context.Context, entry states.UpsertReques
 			status.SetResourceVersion(item.GetResourceVersion())
 			_, err = s.DynamicClient.Resource(resourceId).Namespace(namespace).UpdateStatus(ctx, status, v1.UpdateOptions{})
 			if err != nil {
-				sLog.Errorf("  P (K8s State): failed to update object status: %v", err)
+				sLog.Errorf("  P (K8s State): failed to update object status for status: %v", err)
 				return "", err
 			}
 		}
@@ -548,6 +563,8 @@ func (s *K8sStateProvider) Delete(ctx context.Context, request states.DeleteRequ
 
 	item, err := s.DynamicClient.Resource(resourceId).Namespace(namespace).Get(ctx, request.ID, metav1.GetOptions{})
 	if err == nil {
+		sLog.Info("  P (K8s State): delete state , get object>>>>>>>>>>>>>>>>>>>>  %v", request.ID)
+
 		labels := item.GetLabels()
 		_, exists := labels["tag"]
 
@@ -557,6 +574,8 @@ func (s *K8sStateProvider) Delete(ctx context.Context, request states.DeleteRequ
 				LabelSelector: labelSelector,
 			}
 			items, err := s.DynamicClient.Resource(resourceId).Namespace(namespace).List(ctx, listOptions)
+			sLog.Info("  P (K8s State): delete state , list items acount >>>>>>>>>>>>>>>>>>>> %d", len(items.Items))
+
 			if err != nil {
 				sLog.Errorf("  P (K8s State): failed to list object with labels %s in namespace %s: %v ", labelSelector, namespace, err)
 				return err
@@ -565,64 +584,47 @@ func (s *K8sStateProvider) Delete(ctx context.Context, request states.DeleteRequ
 			var latestItem unstructured.Unstructured
 			var latestTime time.Time
 			for _, v := range items.Items {
+				if reflect.DeepEqual(item, &v) {
+					sLog.Info("  P (K8s State): delete state , deep copy equal>>>>>>>>>>>>>>>>>>>> %v", item.GetName())
+					continue
+				}
 				if latestTime.Before(v.GetCreationTimestamp().Time) {
 					latestTime = v.GetCreationTimestamp().Time
+					sLog.Info("  P (K8s State): delete state , latest item refreshed1 >>>>>>>>>>>>>>>>>>>> %v", v.GetName())
 					latestItem = v
 				}
 			}
 
-			latestItemLabels := latestItem.GetLabels()
-			if latestItemLabels == nil {
-				latestItemLabels = make(map[string]string)
-			}
-			latestItemLabels["tag"] = "latest"
+			if !reflect.DeepEqual(latestItem, unstructured.Unstructured{}) {
+				labels := latestItem.GetLabels()
+				if labels == nil {
+					labels = make(map[string]string)
+				}
+				_, existTag := labels["tag"]
+				sLog.Info("  P (K8s State): delete state , latest exist tag >>>>>>>>>>>>>>>>>>>> %v", existTag)
 
-			_, err = s.DynamicClient.Resource(resourceId).Namespace(namespace).Update(ctx, &latestItem, metav1.UpdateOptions{})
-			if err != nil {
-				sLog.Errorf("  P (K8s State): failed to add labels for obj %s in namespace %s: %v ", latestItem.GetName(), err)
-				return err
-			} else {
-				sLog.Infof("  P (K8s State): add labels %s from object %s in namespace %s: %v ", labelSelector, latestItem.GetName(), namespace, err)
+				if !existTag {
+					labels["tag"] = "latest"
+					latestItem.SetLabels(labels)
+
+					sLog.Info("  P (K8s State): delete state , update latest item>>>>>>>>>>>>>>>>>>>> %v", labels["tag"])
+					_, err = s.DynamicClient.Resource(resourceId).Namespace(namespace).Update(ctx, &latestItem, metav1.UpdateOptions{})
+					if err != nil {
+						sLog.Errorf("  P (K8s State): failed to add labels for obj %s in namespace %s: %v ", latestItem.GetName(), err)
+						return err
+					} else {
+						sLog.Infof("  P (K8s State): add labels %s from object %s in namespace %s: %v ", labelSelector, latestItem.GetName(), namespace, err)
+					}
+				}
 			}
+
 		}
 
+		sLog.Info("  P (K8s State): delete state , delete the current %v", request.ID)
 		err = s.DynamicClient.Resource(resourceId).Namespace(namespace).Delete(ctx, request.ID, metav1.DeleteOptions{})
 		if err != nil {
 			sLog.Errorf("  P (K8s State): failed to delete objects: %v", err)
 			return err
-		}
-	} else {
-		labelSelector := "rootResource=" + rootResource
-		listOptions := metav1.ListOptions{
-			LabelSelector: labelSelector,
-		}
-		items, err := s.DynamicClient.Resource(resourceId).Namespace(namespace).List(ctx, listOptions)
-		if err != nil {
-			sLog.Errorf("  P (K8s State): failed to list object with labels %s in namespace %s: %v ", labelSelector, namespace, err)
-			return err
-		}
-
-		var latestItem unstructured.Unstructured
-		var latestTime time.Time
-		for _, v := range items.Items {
-			if latestTime.Before(v.GetCreationTimestamp().Time) {
-				latestTime = v.GetCreationTimestamp().Time
-				latestItem = v
-			}
-		}
-
-		latestItemLabels := latestItem.GetLabels()
-		if latestItemLabels == nil {
-			latestItemLabels = make(map[string]string)
-		}
-		latestItemLabels["tag"] = "latest"
-
-		_, err = s.DynamicClient.Resource(resourceId).Namespace(namespace).Update(ctx, &latestItem, metav1.UpdateOptions{})
-		if err != nil {
-			sLog.Errorf("  P (K8s State): failed to add labels for obj %s in namespace %s: %v ", latestItem.GetName(), err)
-			return err
-		} else {
-			sLog.Infof("  P (K8s State): add labels %s from object %s in namespace %s: %v ", labelSelector, latestItem.GetName(), namespace, err)
 		}
 	}
 

@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/model"
@@ -62,6 +63,8 @@ func (t *SolutionsManager) DeleteState(ctx context.Context, name string, namespa
 		return v1alpha2.NewCOAError(nil, fmt.Sprintf("Solution name is invalid in the request (%s)", name), v1alpha2.BadRequest)
 	}
 
+	sLog.Info("  M (Solution manager): delete state >>>>>>>>>>>>>>>>>>>>parts  %v, %v", rootResource, version)
+
 	id := rootResource + "-" + version
 	err = t.StateProvider.Delete(ctx, states.DeleteRequest{
 		ID: id,
@@ -84,7 +87,7 @@ func (t *SolutionsManager) UpsertState(ctx context.Context, name string, state m
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
 
-	sLog.Info("  M (Solution manager): upsert state >>>>>>>>>>>>>>>>>>>>  %v, %v, %v", state.Spec.Version, state.Spec.RootResource, name)
+	sLog.Info("  M (Solution manager): debug upsert state >>>>>>>>>>>>>>>>>>>>  %v, %v, %v", state.Spec.Version, state.Spec.RootResource, name)
 	if state.ObjectMeta.Name != "" && state.ObjectMeta.Name != name {
 		return v1alpha2.NewCOAError(nil, fmt.Sprintf("Name in metadata (%s) does not match name in request (%s)", state.ObjectMeta.Name, name), v1alpha2.BadRequest)
 	}
@@ -99,20 +102,28 @@ func (t *SolutionsManager) UpsertState(ctx context.Context, name string, state m
 		rootResource = state.Spec.RootResource
 	}
 
+	if state.ObjectMeta.Labels == nil {
+		state.ObjectMeta.Labels = make(map[string]string)
+	}
+
+	_, versionLabelExists := state.ObjectMeta.Labels["version"]
+	_, rootLabelExists := state.ObjectMeta.Labels["rootResource"]
 	refreshLabels := false
-	if state.ObjectMeta.Labels == nil || state.ObjectMeta.Labels["version"] == "" || state.ObjectMeta.Labels["rootResource"] == "" {
+	if !versionLabelExists || !rootLabelExists {
+		sLog.Info("  M (Solution manager): update labels to true >>>>>>>>>>>>>>>>>>>>  %v, %v", rootResource, version)
+
 		state.ObjectMeta.Labels["rootResource"] = rootResource
 		state.ObjectMeta.Labels["version"] = version
 		refreshLabels = true
 	}
 
+	sLog.Info("  M (Solution manager): debug refresh >>>>>>>>>>>>>>>>>>>>  %v, %v, %v", refreshLabels, versionLabelExists, rootLabelExists)
+
 	body := map[string]interface{}{
-		"apiVersion":    model.SolutionGroup + "/v1",
-		"kind":          "Solution",
-		"metadata":      state.ObjectMeta,
-		"spec":          state.Spec,
-		"rootResource":  rootResource,
-		"refreshLabels": refreshLabels,
+		"apiVersion": model.SolutionGroup + "/v1",
+		"kind":       "Solution",
+		"metadata":   state.ObjectMeta,
+		"spec":       state.Spec,
 	}
 
 	upsertRequest := states.UpsertRequest{
@@ -121,11 +132,13 @@ func (t *SolutionsManager) UpsertState(ctx context.Context, name string, state m
 			Body: body,
 		},
 		Metadata: map[string]interface{}{
-			"namespace": state.ObjectMeta.Namespace,
-			"group":     model.SolutionGroup,
-			"version":   "v1",
-			"resource":  "solutions",
-			"kind":      "Solution",
+			"namespace":     state.ObjectMeta.Namespace,
+			"group":         model.SolutionGroup,
+			"version":       "v1",
+			"resource":      "solutions",
+			"kind":          "Solution",
+			"rootResource":  rootResource,
+			"refreshLabels": strconv.FormatBool(refreshLabels),
 		},
 	}
 
@@ -186,6 +199,8 @@ func (t *SolutionsManager) GetState(ctx context.Context, id string, namespace st
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
 
+	sLog.Info("  M (Solution manager): debug get state >>>>>>>>>>>>>>>>>>>>  %v, %v", id, namespace)
+
 	getRequest := states.GetRequest{
 		ID: id,
 		Metadata: map[string]interface{}{
@@ -215,6 +230,8 @@ func (t *SolutionsManager) GetLatestState(ctx context.Context, id string, namesp
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
+
+	sLog.Info("  M (Solution manager): debug get latest state >>>>>>>>>>>>>>>>>>>>  %v, %v", id, namespace)
 
 	getRequest := states.GetRequest{
 		ID: id,
