@@ -100,7 +100,7 @@ func (c *SolutionsVendor) onSolutions(request v1alpha2.COARequest) v1alpha2.COAR
 		var state interface{}
 
 		if version == "" || version == "latest" {
-			state, err = c.SolutionsManager.GetLatestState(ctx, id, namespace)
+			state, err = c.SolutionsManager.GetLatestState(ctx, rootResource, namespace)
 		} else {
 			state, err = c.SolutionsManager.GetState(ctx, id, namespace)
 		}

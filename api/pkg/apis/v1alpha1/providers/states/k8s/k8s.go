@@ -730,22 +730,27 @@ func (s *K8sStateProvider) GetLatest(ctx context.Context, request states.GetRequ
 		LabelSelector: labelSelector,
 	}
 
+	sLog.Info("  P (K8s State): debug get GetLatest label selector >>>>>>>>>>>>>>>>>>>> %v", labelSelector)
+
 	items, err := s.DynamicClient.Resource(resourceId).Namespace(namespace).List(ctx, options)
 	if err != nil {
 		sLog.Errorf("  P (K8s State): failed to get latest object %s in namespace %s: %v ", request.ID, namespace, err)
 		return states.StateEntry{}, err
 	}
+	sLog.Info("  P (K8s State): debug get GetLatest list resource count >>>>>>>>>>>>>>>>>>>> %d", len(items.Items))
 
 	var latestItem unstructured.Unstructured
 	var latestTime time.Time
 
 	if len(items.Items) == 0 {
+		sLog.Info("  P (K8s State): debug get GetLatest  get 0 latest object >>>>>>>>>>>>>>>>>>>> %d", len(items.Items))
 		err := v1alpha2.NewCOAError(nil, "failed to find latest object", v1alpha2.NotFound)
 		return states.StateEntry{}, err
 	}
 
 	for _, v := range items.Items {
 		if latestTime.Before(v.GetCreationTimestamp().Time) {
+			sLog.Info("  P (K8s State): debug get GetLatest set latest >>>>>>>>>>>>>>>>>>>> %d", v.GetName())
 			latestTime = v.GetCreationTimestamp().Time
 			latestItem = v
 		}

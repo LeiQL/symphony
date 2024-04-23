@@ -356,6 +356,7 @@ func (s *JobsManager) HandleJobEvent(ctx context.Context, event v1alpha2.Event) 
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
+	log.Info(" M (Job): handling %v event, event body %v, %v", event.Metadata["objectType"], "job", event.Body)
 
 	namespace := model.ReadProperty(event.Metadata, "namespace", nil)
 	if namespace == "" {
