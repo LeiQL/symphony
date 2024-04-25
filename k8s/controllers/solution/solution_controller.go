@@ -79,7 +79,7 @@ func (r *SolutionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		log.Info("Solution update")
 		_, exists := solution.Labels["version"]
 		log.Info(fmt.Sprintf("Solution update: exists version tag, %v", exists))
-		if !exists {
+		if !exists && version != "" && name != "" {
 			log.Info(">>>>>>>>>>>>>>>>>>>>>>>>>> Call API to upsert solution")
 			err := api_utils.UpsertSolution(ctx, "http://symphony-service:8080/v1alpha2/", solutionName, "admin", "", jData, req.Namespace)
 			if err != nil {
