@@ -69,7 +69,7 @@ func (o *TargetsVendor) GetEndpoints() []v1alpha2.Endpoint {
 			Route:      route + "/registry",
 			Version:    o.Version,
 			Handler:    o.onRegistry,
-			Parameters: []string{"name?"},
+			Parameters: []string{"name", "version?"},
 		},
 		{
 			Methods: []string{fasthttp.MethodPost},
@@ -82,7 +82,7 @@ func (o *TargetsVendor) GetEndpoints() []v1alpha2.Endpoint {
 			Route:      route + "/ping",
 			Version:    o.Version,
 			Handler:    o.onHeartBeat,
-			Parameters: []string{"name"},
+			Parameters: []string{"name", "version"},
 		},
 		{
 			Methods:    []string{fasthttp.MethodPut},

@@ -374,3 +374,133 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - workflow.symphony
+  resources:
+  - versionedcampaigns
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - workflow.symphony
+  resources:
+  - versionedcampaigns/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - workflow.symphony
+  resources:
+  - versionedcampaigns/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - solution.symphony
+  resources:
+  - versionedinstances
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - solution.symphony
+  resources:
+  - versionedinstances/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - solution.symphony
+  resources:
+  - versionedinstances/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - solution.symphony
+  resources:
+  - versionedsolutions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - solution.symphony
+  resources:
+  - versionedsolutions/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - solution.symphony
+  resources:
+  - versionedsolutions/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - fabric.symphony
+  resources:
+  - versionedtargets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - fabric.symphony
+  resources:
+  - versionedtargets/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - fabric.symphony
+  resources:
+  - versionedtargets/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - federation.symphony
+  resources:
+  - versionedcatalogs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - federation.symphony
+  resources:
+  - versionedcatalogs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - federation.symphony
+  resources:
+  - versionedcatalogs/status
+  verbs:
+  - get
+  - patch
+  - update

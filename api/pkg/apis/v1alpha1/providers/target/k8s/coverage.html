@@ -1,0 +1,1123 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>k8s: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/providers/target/k8s/k8s.go (3.0%)</option>
+				
+				<option value="file1">github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/providers/target/k8s/projectors/noop.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">/*
+ * Copyright (c) Microsoft Corporation.
+ * Licensed under the MIT license.
+ * SPDX-License-Identifier: MIT
+ */
+
+package k8s
+
+import (
+        "context"
+        "encoding/json"
+        "errors"
+        "fmt"
+        "path/filepath"
+        "strconv"
+        "strings"
+        "time"
+
+        "github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/model"
+        "github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/providers/target/k8s/projectors"
+        utils "github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/utils"
+        "github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2"
+        "github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2/contexts"
+        "github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2/observability"
+        observ_utils "github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2/observability/utils"
+        "github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2/providers"
+        "github.com/eclipse-symphony/symphony/coa/pkg/logger"
+        "go.opentelemetry.io/otel/trace"
+        v1 "k8s.io/api/apps/v1"
+        apiv1 "k8s.io/api/core/v1"
+        k8s_errors "k8s.io/apimachinery/pkg/api/errors"
+        metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+        "k8s.io/client-go/dynamic"
+        "k8s.io/client-go/kubernetes"
+        "k8s.io/client-go/rest"
+        "k8s.io/client-go/tools/clientcmd"
+        "k8s.io/client-go/util/homedir"
+)
+
+var log = logger.NewLogger("coa.runtime")
+
+const (
+        ENV_NAME     string = "SYMPHONY_AGENT_ADDRESS"
+        SINGLE_POD   string = "single-pod"
+        SERVICES     string = "services"
+        SERVICES_NS  string = "ns-services"
+        SERVICES_HNS string = "hns-services" //TODO: future versions
+)
+
+type K8sTargetProviderConfig struct {
+        Name                 string `json:"name"`
+        ConfigType           string `json:"configType,omitempty"`
+        ConfigData           string `json:"configData,omitempty"`
+        Context              string `json:"context,omitempty"`
+        InCluster            bool   `json:"inCluster"`
+        Projector            string `json:"projector,omitempty"`
+        DeploymentStrategy   string `json:"deploymentStrategy,omitempty"`
+        DeleteEmptyNamespace bool   `json:"deleteEmptyNamespace"`
+        RetryCount           int    `json:"retryCount"`
+        RetryIntervalInSec   int    `json:"retryIntervalInSec"`
+}
+
+type K8sTargetProvider struct {
+        Config        K8sTargetProviderConfig
+        Context       *contexts.ManagerContext
+        Client        kubernetes.Interface
+        DynamicClient dynamic.Interface
+}
+
+func K8sTargetProviderConfigFromMap(properties map[string]string) (K8sTargetProviderConfig, error) <span class="cov8" title="1">{
+        ret := K8sTargetProviderConfig{}
+        if v, ok := properties["name"]; ok </span><span class="cov0" title="0">{
+                ret.Name = v
+        }</span>
+        <span class="cov8" title="1">if v, ok := properties["configType"]; ok </span><span class="cov0" title="0">{
+                ret.ConfigType = v
+        }</span>
+        <span class="cov8" title="1">if ret.ConfigType == "" </span><span class="cov8" title="1">{
+                ret.ConfigType = "path"
+        }</span>
+        <span class="cov8" title="1">if v, ok := properties["configData"]; ok </span><span class="cov0" title="0">{
+                ret.ConfigData = v
+        }</span>
+        <span class="cov8" title="1">if v, ok := properties["context"]; ok </span><span class="cov0" title="0">{
+                ret.Context = v
+        }</span>
+        <span class="cov8" title="1">if v, ok := properties["inCluster"]; ok </span><span class="cov0" title="0">{
+                val := v
+                if val != "" </span><span class="cov0" title="0">{
+                        bVal, err := strconv.ParseBool(val)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return ret, v1alpha2.NewCOAError(err, "invalid bool value in the 'inCluster' setting of K8s reference provider", v1alpha2.BadConfig)
+                        }</span>
+                        <span class="cov0" title="0">ret.InCluster = bVal</span>
+                }
+        }
+        <span class="cov8" title="1">if v, ok := properties["deploymentStrategy"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                if v != SERVICES &amp;&amp; v != SINGLE_POD &amp;&amp; v != SERVICES_NS </span><span class="cov0" title="0">{
+                        return ret, v1alpha2.NewCOAError(nil, fmt.Sprintf("invalid deployment strategy. Expected: %s (default), %s or %s", SINGLE_POD, SERVICES, SERVICES_NS), v1alpha2.BadConfig)
+                }</span>
+                <span class="cov0" title="0">ret.DeploymentStrategy = v</span>
+        } else<span class="cov8" title="1"> {
+                ret.DeploymentStrategy = SINGLE_POD
+        }</span>
+        <span class="cov8" title="1">if v, ok := properties["deleteEmptyNamespace"]; ok </span><span class="cov0" title="0">{
+                val := v
+                if val != "" </span><span class="cov0" title="0">{
+                        bVal, err := strconv.ParseBool(val)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return ret, v1alpha2.NewCOAError(err, "invalid bool value in the 'deleteEmptyNamespace' setting of K8s reference provider", v1alpha2.BadConfig)
+                        }</span>
+                        <span class="cov0" title="0">ret.DeleteEmptyNamespace = bVal</span>
+                }
+        }
+        <span class="cov8" title="1">if v, ok := properties["retryCount"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                ival, err := strconv.Atoi(v)
+                if err != nil </span><span class="cov0" title="0">{
+                        return ret, v1alpha2.NewCOAError(err, "invalid int value in the 'retryCount' setting of K8s reference provider", v1alpha2.BadConfig)
+                }</span>
+                <span class="cov0" title="0">ret.RetryCount = ival</span>
+        } else<span class="cov8" title="1"> {
+                ret.RetryCount = 3
+        }</span>
+        <span class="cov8" title="1">if v, ok := properties["retryIntervalInSec"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                ival, err := strconv.Atoi(v)
+                if err != nil </span><span class="cov0" title="0">{
+                        return ret, v1alpha2.NewCOAError(err, "invalid int value in the 'retryInterval' setting of K8s reference provider", v1alpha2.BadConfig)
+                }</span>
+                <span class="cov0" title="0">ret.RetryIntervalInSec = ival</span>
+        } else<span class="cov8" title="1"> {
+                ret.RetryIntervalInSec = 2
+        }</span>
+        <span class="cov8" title="1">return ret, nil</span>
+}
+func (i *K8sTargetProvider) InitWithMap(properties map[string]string) error <span class="cov0" title="0">{
+        config, err := K8sTargetProviderConfigFromMap(properties)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">return i.Init(config)</span>
+}
+func (s *K8sTargetProvider) SetContext(ctx *contexts.ManagerContext) <span class="cov0" title="0">{
+        s.Context = ctx
+}</span>
+
+func (i *K8sTargetProvider) Init(config providers.IProviderConfig) error <span class="cov0" title="0">{
+        _, span := observability.StartSpan(
+                "K8s Target Provider",
+                context.TODO(),
+                &amp;map[string]string{
+                        "method": "Init",
+                },
+        )
+        var err error
+        defer observ_utils.CloseSpanWithError(span, &amp;err)
+        log.Info("  P (K8s Target): Init()")
+
+        updateConfig, err := toK8sTargetProviderConfig(config)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Errorf("  P (K8s Target): expected K8sTargetProviderConfig - %+v", err)
+                return errors.New("expected K8sTargetProviderConfig")
+        }</span>
+        <span class="cov0" title="0">i.Config = updateConfig
+        var kConfig *rest.Config
+        if i.Config.InCluster </span><span class="cov0" title="0">{
+                kConfig, err = rest.InClusterConfig()
+        }</span> else<span class="cov0" title="0"> {
+                switch i.Config.ConfigType </span>{
+                case "path":<span class="cov0" title="0">
+                        if i.Config.ConfigData == "" </span><span class="cov0" title="0">{
+                                if home := homedir.HomeDir(); home != "" </span><span class="cov0" title="0">{
+                                        i.Config.ConfigData = filepath.Join(home, ".kube", "config")
+                                }</span> else<span class="cov0" title="0"> {
+                                        err = v1alpha2.NewCOAError(nil, "can't locate home direction to read default kubernetes config file, to run in cluster, set inCluster config setting to true", v1alpha2.BadConfig)
+                                        log.Errorf("  P (K8s Target): %+v", err)
+                                        return err
+                                }</span>
+                        }
+                        <span class="cov0" title="0">kConfig, err = clientcmd.BuildConfigFromFlags("", i.Config.ConfigData)</span>
+                case "bytes":<span class="cov0" title="0">
+                        if i.Config.ConfigData != "" </span><span class="cov0" title="0">{
+                                kConfig, err = clientcmd.RESTConfigFromKubeConfig([]byte(i.Config.ConfigData))
+                                if err != nil </span><span class="cov0" title="0">{
+                                        log.Errorf("  P (K8s Target): failed to get RESTconfg:  %+v", err)
+                                        return err
+                                }</span>
+                        } else<span class="cov0" title="0"> {
+                                err = v1alpha2.NewCOAError(nil, "config data is not supplied", v1alpha2.BadConfig)
+                                log.Errorf("  P (K8s Target): %+v", err)
+                                return err
+                        }</span>
+                default:<span class="cov0" title="0">
+                        err = v1alpha2.NewCOAError(nil, "unrecognized config type, accepted values are: path and inline", v1alpha2.BadConfig)
+                        log.Errorf("  P (K8s Target): %+v", err)
+                        return err</span>
+                }
+        }
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                log.Errorf("  P (K8s Target): failed to get the cluster config: %+v", err)
+                return err
+        }</span>
+        <span class="cov0" title="0">i.Client, err = kubernetes.NewForConfig(kConfig)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Errorf("  P (K8s Target): failed to create a new clientset: %+v", err)
+                return err
+        }</span>
+        <span class="cov0" title="0">i.DynamicClient, err = dynamic.NewForConfig(kConfig)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Errorf("  P (K8s Target): failed to create a discovery client: %+v", err)
+                return err
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+func toK8sTargetProviderConfig(config providers.IProviderConfig) (K8sTargetProviderConfig, error) <span class="cov0" title="0">{
+        ret := K8sTargetProviderConfig{}
+        data, err := json.Marshal(config)
+        if err != nil </span><span class="cov0" title="0">{
+                return ret, err
+        }</span>
+        <span class="cov0" title="0">err = json.Unmarshal(data, &amp;ret)
+        //ret.Name = providers.LoadEnv(ret.Name)
+        //ret.ConfigPath = providers.LoadEnv(ret.ConfigPath)
+        return ret, err</span>
+}
+
+func (i *K8sTargetProvider) getDeployment(ctx context.Context, scope string, name string) ([]model.ComponentSpec, error) <span class="cov0" title="0">{
+        _, span := observability.StartSpan("K8s Target Provider", ctx, &amp;map[string]string{
+                "method": "getDeployment",
+        })
+        var err error = nil
+        defer observ_utils.CloseSpanWithError(span, &amp;err)
+        log.Infof("  P (K8s Target Provider): getDeployment scope - %s, name - %s, traceId: %s", scope, name, span.SpanContext().TraceID().String())
+
+        if scope == "" </span><span class="cov0" title="0">{
+                scope = "default"
+        }</span>
+
+        <span class="cov0" title="0">deployment, err := i.Client.AppsV1().Deployments(scope).Get(ctx, name, metav1.GetOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                if k8s_errors.IsNotFound(err) </span><span class="cov0" title="0">{
+                        return nil, nil
+                }</span>
+                <span class="cov0" title="0">log.Errorf("  P (K8s Target Provider): getDeployment %s failed - %s", name, err.Error())
+                return nil, err</span>
+        }
+        <span class="cov0" title="0">components, err := deploymentToComponents(*deployment)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Errorf("  P (K8s Target Provider): getDeployment failed - %s", err.Error())
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return components, nil</span>
+}
+func (i *K8sTargetProvider) fillServiceMeta(ctx context.Context, scope string, name string, component model.ComponentSpec) error <span class="cov0" title="0">{
+        svc, err := i.Client.CoreV1().Services(scope).Get(ctx, name, metav1.GetOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                if k8s_errors.IsNotFound(err) </span><span class="cov0" title="0">{
+                        return nil
+                }</span>
+                <span class="cov0" title="0">return err</span>
+        }
+        <span class="cov0" title="0">if component.Metadata == nil </span><span class="cov0" title="0">{
+                component.Metadata = make(map[string]string)
+        }</span>
+        <span class="cov0" title="0">portData, _ := json.Marshal(svc.Spec.Ports)
+        component.Metadata["service.ports"] = string(portData)
+        component.Metadata["service.type"] = string(svc.Spec.Type)
+        if svc.ObjectMeta.Name != name </span><span class="cov0" title="0">{
+                component.Metadata["service.name"] = svc.ObjectMeta.Name
+        }</span>
+        <span class="cov0" title="0">if component.Metadata["service.type"] == "LoadBalancer" </span><span class="cov0" title="0">{
+                component.Metadata["service.loadBalancerIP"] = svc.Spec.LoadBalancerIP
+        }</span>
+        <span class="cov0" title="0">for k, v := range svc.ObjectMeta.Annotations </span><span class="cov0" title="0">{
+                component.Metadata["service.annotation."+k] = v
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+func (i *K8sTargetProvider) Get(ctx context.Context, dep model.DeploymentSpec, references []model.ComponentStep) ([]model.ComponentSpec, error) <span class="cov0" title="0">{
+        ctx, span := observability.StartSpan("K8s Target Provider", ctx, &amp;map[string]string{
+                "method": "Get",
+        })
+        var err error = nil
+        defer observ_utils.CloseSpanWithError(span, &amp;err)
+        log.Infof("  P (K8s Target Provider): getting artifacts: %s - %s, traceId: %s", dep.Instance.Scope, dep.Instance.Name, span.SpanContext().TraceID().String())
+
+        var components []model.ComponentSpec
+
+        switch i.Config.DeploymentStrategy </span>{
+        case "", SINGLE_POD:<span class="cov0" title="0">
+                components, err = i.getDeployment(ctx, dep.Instance.Scope, dep.Instance.Name)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Debugf("  P (K8s Target Provider): failed to get - %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                        return nil, err
+                }</span>
+        case SERVICES, SERVICES_NS:<span class="cov0" title="0">
+                components = make([]model.ComponentSpec, 0)
+                scope := dep.Instance.Scope
+                if i.Config.DeploymentStrategy == SERVICES_NS </span><span class="cov0" title="0">{
+                        scope = dep.Instance.Name
+                }</span>
+                <span class="cov0" title="0">slice := dep.GetComponentSlice()
+                for _, component := range slice </span><span class="cov0" title="0">{
+                        var cComponents []model.ComponentSpec
+                        cComponents, err = i.getDeployment(ctx, scope, component.Name)
+                        if err != nil </span><span class="cov0" title="0">{
+                                log.Debugf("  P (K8s Target Provider): failed to get deployment: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                                return nil, err
+                        }</span>
+                        <span class="cov0" title="0">if len(cComponents) &gt; 1 </span><span class="cov0" title="0">{
+                                log.Debugf("  P (K8s Target Provider): can't read multiple components %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                                err = v1alpha2.NewCOAError(nil, fmt.Sprintf("can't read multiple components when %s strategy or %s strategy is used", SERVICES, SERVICES_NS), v1alpha2.InternalError)
+                                return nil, err
+                        }</span>
+                        <span class="cov0" title="0">if len(cComponents) == 1 </span><span class="cov0" title="0">{
+                                serviceName := cComponents[0].Name
+
+                                if cComponents[0].Metadata != nil </span><span class="cov0" title="0">{
+                                        if v, ok := cComponents[0].Metadata["service.name"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                                                serviceName = v
+                                        }</span>
+                                }
+                                <span class="cov0" title="0">if cComponents[0].Metadata == nil </span><span class="cov0" title="0">{
+                                        cComponents[0].Metadata = make(map[string]string)
+                                }</span>
+
+                                <span class="cov0" title="0">err = i.fillServiceMeta(ctx, scope, serviceName, cComponents[0])
+                                if err != nil </span><span class="cov0" title="0">{
+                                        log.Debugf("  P (K8s Target Provider): failed to get: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                                        return nil, err
+                                }</span>
+                                <span class="cov0" title="0">components = append(components, cComponents...)</span>
+                        }
+                }
+        }
+
+        <span class="cov0" title="0">return components, nil</span>
+}
+func (i *K8sTargetProvider) removeService(ctx context.Context, scope string, serviceName string) error <span class="cov0" title="0">{
+        _, span := observability.StartSpan("K8s Target Provider", ctx, &amp;map[string]string{
+                "method": "removeService",
+        })
+        var err error = nil
+        defer observ_utils.CloseSpanWithError(span, &amp;err)
+        log.Infof("  P (K8s Target Provider): removeService scope - %s, serviceName - %s", scope, serviceName)
+
+        if scope == "" </span><span class="cov0" title="0">{
+                scope = "default"
+        }</span>
+
+        <span class="cov0" title="0">svc, err := i.Client.CoreV1().Services(scope).Get(ctx, serviceName, metav1.GetOptions{})
+        if err == nil &amp;&amp; svc != nil </span><span class="cov0" title="0">{
+                foregroundDeletion := metav1.DeletePropagationForeground
+                err = i.Client.CoreV1().Services(scope).Delete(ctx, serviceName, metav1.DeleteOptions{PropagationPolicy: &amp;foregroundDeletion})
+                if err != nil </span><span class="cov0" title="0">{
+                        if !k8s_errors.IsNotFound(err) </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                }
+        }
+        <span class="cov0" title="0">return nil</span>
+}
+func (i *K8sTargetProvider) removeDeployment(ctx context.Context, scope string, name string) error <span class="cov0" title="0">{
+        _, span := observability.StartSpan("K8s Target Provider", ctx, &amp;map[string]string{
+                "method": "removeDeployment",
+        })
+        var err error = nil
+        defer observ_utils.CloseSpanWithError(span, &amp;err)
+        log.Infof("  P (K8s Target Provider): removeDeployment scope - %s, name - %s", scope, name)
+
+        if scope == "" </span><span class="cov0" title="0">{
+                scope = "default"
+        }</span>
+
+        <span class="cov0" title="0">foregroundDeletion := metav1.DeletePropagationForeground
+        err = i.Client.AppsV1().Deployments(scope).Delete(ctx, name, metav1.DeleteOptions{PropagationPolicy: &amp;foregroundDeletion})
+        if err != nil </span><span class="cov0" title="0">{
+                if !k8s_errors.IsNotFound(err) </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+        }
+
+        <span class="cov0" title="0">return nil</span>
+}
+func (i *K8sTargetProvider) removeNamespace(ctx context.Context, scope string, retryCount int, retryIntervalInSec int) error <span class="cov0" title="0">{
+        _, span := observability.StartSpan("K8s Target Provider", ctx, &amp;map[string]string{
+                "method": "removeNamespace",
+        })
+        var err error = nil
+        defer observ_utils.CloseSpanWithError(span, &amp;err)
+        log.Infof("  P (K8s Target Provider): removeNamespace scope - %s, traceId: %s", scope, span.SpanContext().TraceID().String())
+
+        _, err = i.Client.CoreV1().Namespaces().Get(ctx, scope, metav1.GetOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">if scope == "" || scope == "default" </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+
+        <span class="cov0" title="0">resourceCount := make(map[string]int)
+        count := 0
+        for </span><span class="cov0" title="0">{
+                count++
+                podList, _ := i.Client.CoreV1().Pods(scope).List(ctx, metav1.ListOptions{})
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov0" title="0">if len(podList.Items) == 0 || count == retryCount </span><span class="cov0" title="0">{
+                        resourceCount["pod"] = len(podList.Items)
+                        break</span>
+                }
+                <span class="cov0" title="0">time.Sleep(time.Second * time.Duration(retryIntervalInSec))</span>
+        }
+
+        <span class="cov0" title="0">deploymentList, err := i.Client.AppsV1().Deployments(scope).List(ctx, metav1.ListOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">resourceCount["deployment"] = len(deploymentList.Items)
+
+        serviceList, err := i.Client.CoreV1().Services(scope).List(ctx, metav1.ListOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">resourceCount["service"] = len(serviceList.Items)
+
+        replicasetList, err := i.Client.AppsV1().ReplicaSets(scope).List(ctx, metav1.ListOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">resourceCount["replicaset"] = len(replicasetList.Items)
+
+        statefulsetList, err := i.Client.AppsV1().StatefulSets(scope).List(ctx, metav1.ListOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">resourceCount["statefulset"] = len(statefulsetList.Items)
+
+        daemonsetList, err := i.Client.AppsV1().DaemonSets(scope).List(ctx, metav1.ListOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">resourceCount["daemonset"] = len(daemonsetList.Items)
+
+        jobList, err := i.Client.BatchV1().Jobs(scope).List(ctx, metav1.ListOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">resourceCount["job"] = len(jobList.Items)
+
+        isEmpty := true
+        for resource, count := range resourceCount </span><span class="cov0" title="0">{
+                if count != 0 </span><span class="cov0" title="0">{
+                        log.Debugf("  P (K8s Target Provider): failed to delete %s namespace as resource %s is not empty", scope, resource)
+                        isEmpty = false
+                        break</span>
+                }
+        }
+
+        <span class="cov0" title="0">if isEmpty </span><span class="cov0" title="0">{
+                err = i.Client.CoreV1().Namespaces().Delete(ctx, scope, metav1.DeleteOptions{})
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+        }
+        <span class="cov0" title="0">return nil</span>
+}
+func (i *K8sTargetProvider) createNamespace(ctx context.Context, scope string) error <span class="cov0" title="0">{
+        _, span := observability.StartSpan("K8s Target Provider", ctx, &amp;map[string]string{
+                "method": "createNamespace",
+        })
+        var err error = nil
+        defer observ_utils.CloseSpanWithError(span, &amp;err)
+        log.Infof("  P (K8s Target Provider): removeDeployment scope - %s", scope)
+
+        if scope == "" || scope == "default" </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+        <span class="cov0" title="0">_, err = i.Client.CoreV1().Namespaces().Get(ctx, scope, metav1.GetOptions{})
+
+        if err != nil </span><span class="cov0" title="0">{
+                if k8s_errors.IsNotFound(err) </span><span class="cov0" title="0">{
+                        _, err = i.Client.CoreV1().Namespaces().Create(ctx, &amp;apiv1.Namespace{
+                                ObjectMeta: metav1.ObjectMeta{
+                                        Name: scope,
+                                },
+                        }, metav1.CreateOptions{})
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                } else<span class="cov0" title="0"> {
+                        return err
+                }</span>
+        }
+        <span class="cov0" title="0">return nil</span>
+}
+func (i *K8sTargetProvider) upsertDeployment(ctx context.Context, scope string, name string, deployment *v1.Deployment) error <span class="cov0" title="0">{
+        _, span := observability.StartSpan("K8s Target Provider", ctx, &amp;map[string]string{
+                "method": "upsertDeployment",
+        })
+        var err error = nil
+        defer observ_utils.CloseSpanWithError(span, &amp;err)
+        log.Infof("  P (K8s Target Provider): upsertDeployment scope - %s, name - %s, traceId: %s", scope, name, span.SpanContext().TraceID().String())
+
+        if scope == "" </span><span class="cov0" title="0">{
+                scope = "default"
+        }</span>
+
+        <span class="cov0" title="0">existing, err := i.Client.AppsV1().Deployments(scope).Get(ctx, name, metav1.GetOptions{})
+        if err != nil &amp;&amp; !k8s_errors.IsNotFound(err) </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">if k8s_errors.IsNotFound(err) </span><span class="cov0" title="0">{
+                _, err = i.Client.AppsV1().Deployments(scope).Create(ctx, deployment, metav1.CreateOptions{})
+        }</span> else<span class="cov0" title="0"> {
+                deployment.ResourceVersion = existing.ResourceVersion
+                _, err = i.Client.AppsV1().Deployments(scope).Update(ctx, deployment, metav1.UpdateOptions{})
+        }</span>
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+func (i *K8sTargetProvider) upsertService(ctx context.Context, scope string, name string, service *apiv1.Service) error <span class="cov0" title="0">{
+        _, span := observability.StartSpan("K8s Target Provider", ctx, &amp;map[string]string{
+                "method": "upsertService",
+        })
+        var err error = nil
+        defer observ_utils.CloseSpanWithError(span, &amp;err)
+        log.Infof("  P (K8s Target Provider): upsertService scope - %s, name - %s, traceId: %s", scope, name, span.SpanContext().TraceID().String())
+
+        if scope == "" </span><span class="cov0" title="0">{
+                scope = "default"
+        }</span>
+
+        <span class="cov0" title="0">existing, err := i.Client.CoreV1().Services(scope).Get(ctx, name, metav1.GetOptions{})
+        if err != nil &amp;&amp; !k8s_errors.IsNotFound(err) </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">if k8s_errors.IsNotFound(err) </span><span class="cov0" title="0">{
+                _, err = i.Client.CoreV1().Services(scope).Create(ctx, service, metav1.CreateOptions{})
+        }</span> else<span class="cov0" title="0"> {
+                service.ResourceVersion = existing.ResourceVersion
+                _, err = i.Client.CoreV1().Services(scope).Update(ctx, service, metav1.UpdateOptions{})
+        }</span>
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+func (i *K8sTargetProvider) deployComponents(ctx context.Context, span trace.Span, scope string, name string, metadata map[string]string, components []model.ComponentSpec, projector IK8sProjector, instanceName string) error <span class="cov0" title="0">{
+        var err error = nil
+        defer observ_utils.CloseSpanWithError(span, &amp;err)
+        log.Infof("  P (K8s Target Provider): deployComponents scope - %s, name - %s, traceId: %s", scope, name, span.SpanContext().TraceID().String())
+
+        if scope == "" </span><span class="cov0" title="0">{
+                scope = "default"
+        }</span>
+
+        <span class="cov0" title="0">deployment, err := componentsToDeployment(scope, name, metadata, components, instanceName)
+        if projector != nil </span><span class="cov0" title="0">{
+                err = projector.ProjectDeployment(scope, name, metadata, components, deployment)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Debugf("  P (K8s Target Provider): failed to project deployment: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                        return err
+                }</span>
+        }
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                log.Debugf("  P (K8s Target Provider): failed to apply: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                return err
+        }</span>
+        <span class="cov0" title="0">service, err := metadataToService(scope, name, metadata)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Debugf("  P (K8s Target Provider): failed to apply (convert): %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                return err
+        }</span>
+        <span class="cov0" title="0">if projector != nil </span><span class="cov0" title="0">{
+                err = projector.ProjectService(scope, name, metadata, service)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Debugf("  P (K8s Target Provider): failed to project service: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                        return err
+                }</span>
+        }
+
+        <span class="cov0" title="0">log.Debug("  P (K8s Target Provider): checking namespace")
+        err = i.createNamespace(ctx, scope)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Debugf("  P (K8s Target Provider): failed to create namespace: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                return err
+        }</span>
+
+        <span class="cov0" title="0">log.Debug("  P (K8s Target Provider): creating deployment")
+        err = i.upsertDeployment(ctx, scope, name, deployment)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Debugf("  P (K8s Target Provider): failed to apply (API): %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                return err
+        }</span>
+
+        <span class="cov0" title="0">if service != nil </span><span class="cov0" title="0">{
+                log.Debug("  P (K8s Target Provider): creating service")
+                err = i.upsertService(ctx, scope, service.Name, service)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Debugf("  P (K8s Target Provider): failed to apply (service): %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                        return err
+                }</span>
+        }
+        <span class="cov0" title="0">return nil</span>
+}
+func (*K8sTargetProvider) GetValidationRule(ctx context.Context) model.ValidationRule <span class="cov0" title="0">{
+        return model.ValidationRule{
+                RequiredProperties:    []string{model.ContainerImage},
+                OptionalProperties:    []string{},
+                RequiredComponentType: "",
+                RequiredMetadata:      []string{},
+                OptionalMetadata:      []string{},
+                ChangeDetectionProperties: []model.PropertyDesc{
+                        {Name: model.ContainerImage, IgnoreCase: true, SkipIfMissing: false},
+                        {Name: "env.*", IgnoreCase: true, SkipIfMissing: true},
+                },
+        }
+}</span>
+func (i *K8sTargetProvider) Apply(ctx context.Context, dep model.DeploymentSpec, step model.DeploymentStep, isDryRun bool) (map[string]model.ComponentResultSpec, error) <span class="cov0" title="0">{
+        ctx, span := observability.StartSpan("K8s Target Provider", ctx, &amp;map[string]string{
+                "method": "Apply",
+        })
+        var err error = nil
+        defer observ_utils.CloseSpanWithError(span, &amp;err)
+
+        log.Infof("  P (K8s Target Provider): applying artifacts: %s - %s, traceId: %s", dep.Instance.Scope, dep.Instance.Name, span.SpanContext().TraceID().String())
+
+        components := step.GetComponents()
+        err = i.GetValidationRule(ctx).Validate(components)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Errorf("  P (K8s Target Provider): failed to validate components, error: %v, traceId: %s", err, span.SpanContext().TraceID().String())
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">if isDryRun </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+
+        <span class="cov0" title="0">ret := step.PrepareResultMap()
+
+        projector, err := createProjector(i.Config.Projector)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Debugf("  P (K8s Target Provider): failed to create projector: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                return ret, err
+        }</span>
+
+        <span class="cov0" title="0">switch i.Config.DeploymentStrategy </span>{
+        case "", SINGLE_POD:<span class="cov0" title="0">
+                updated := step.GetUpdatedComponents()
+                if len(updated) &gt; 0 </span><span class="cov0" title="0">{
+                        err = i.deployComponents(ctx, span, dep.Instance.Scope, dep.Instance.Name, dep.Instance.Metadata, components, projector, dep.Instance.Name)
+                        if err != nil </span><span class="cov0" title="0">{
+                                log.Debugf("  P (K8s Target Provider): failed to apply components: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                                return ret, err
+                        }</span>
+                }
+                <span class="cov0" title="0">deleted := step.GetDeletedComponents()
+                if len(deleted) &gt; 0 </span><span class="cov0" title="0">{
+                        serviceName := dep.Instance.Name
+                        if v, ok := dep.Instance.Metadata["service.name"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                                serviceName = v
+                        }</span>
+                        <span class="cov0" title="0">err = i.removeService(ctx, dep.Instance.Scope, serviceName)
+                        if err != nil </span><span class="cov0" title="0">{
+                                log.Debugf("  P (K8s Target Provider): failed to remove service: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                                return ret, err
+                        }</span>
+                        <span class="cov0" title="0">err = i.removeDeployment(ctx, dep.Instance.Scope, dep.Instance.Name)
+                        if err != nil </span><span class="cov0" title="0">{
+                                log.Debugf("  P (K8s Target Provider): failed to remove deployment: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                                return ret, err
+                        }</span>
+                        <span class="cov0" title="0">if i.Config.DeleteEmptyNamespace </span><span class="cov0" title="0">{
+                                err = i.removeNamespace(ctx, dep.Instance.Scope, i.Config.RetryCount, i.Config.RetryIntervalInSec)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        log.Debugf("  P (K8s Target Provider): failed to remove namespace: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                                }</span>
+                        }
+                }
+        case SERVICES, SERVICES_NS:<span class="cov0" title="0">
+                updated := step.GetUpdatedComponents()
+                if len(updated) &gt; 0 </span><span class="cov0" title="0">{
+                        scope := dep.Instance.Scope
+                        if i.Config.DeploymentStrategy == SERVICES_NS </span><span class="cov0" title="0">{
+                                scope = dep.Instance.Name
+                        }</span>
+                        <span class="cov0" title="0">for _, component := range components </span><span class="cov0" title="0">{
+                                if dep.Instance.Metadata != nil </span><span class="cov0" title="0">{
+                                        if v, ok := dep.Instance.Metadata[ENV_NAME]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                                                if component.Metadata == nil </span><span class="cov0" title="0">{
+                                                        component.Metadata = make(map[string]string)
+                                                }</span>
+                                                <span class="cov0" title="0">component.Metadata[ENV_NAME] = v</span>
+                                        }
+                                }
+                                <span class="cov0" title="0">err = i.deployComponents(ctx, span, scope, component.Name, component.Metadata, []model.ComponentSpec{component}, projector, dep.Instance.Name)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        log.Debugf("  P (K8s Target Provider): failed to apply components: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                                        return ret, err
+                                }</span>
+                        }
+                }
+                <span class="cov0" title="0">deleted := step.GetDeletedComponents()
+                if len(deleted) &gt; 0 </span><span class="cov0" title="0">{
+                        scope := dep.Instance.Scope
+                        if i.Config.DeploymentStrategy == SERVICES_NS </span><span class="cov0" title="0">{
+                                scope = dep.Instance.Name
+                        }</span>
+                        <span class="cov0" title="0">for _, component := range deleted </span><span class="cov0" title="0">{
+                                serviceName := component.Name
+                                if component.Metadata != nil </span><span class="cov0" title="0">{
+                                        if v, ok := component.Metadata["service.name"]; ok </span><span class="cov0" title="0">{
+                                                serviceName = v
+                                        }</span>
+                                }
+                                <span class="cov0" title="0">err = i.removeService(ctx, scope, serviceName)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        ret[component.Name] = model.ComponentResultSpec{
+                                                Status:  v1alpha2.DeleteFailed,
+                                                Message: err.Error(),
+                                        }
+                                        log.Debugf("P (K8s Target Provider): failed to remove service: %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+                                        return ret, err
+                                }</span>
+                                <span class="cov0" title="0">err = i.removeDeployment(ctx, scope, component.Name)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        ret[component.Name] = model.ComponentResultSpec{
+                                                Status:  v1alpha2.DeleteFailed,
+                                                Message: err.Error(),
+                                        }
+                                        log.Debugf("P (K8s Target Provider): failed to remove deployment: %s, traceId: %", err.Error(), span.SpanContext().TraceID().String())
+                                        return ret, err
+                                }</span>
+                                <span class="cov0" title="0">if i.Config.DeleteEmptyNamespace </span><span class="cov0" title="0">{
+                                        err = i.removeNamespace(ctx, dep.Instance.Scope, i.Config.RetryCount, i.Config.RetryIntervalInSec)
+                                        if err != nil </span><span class="cov0" title="0">{
+                                                log.Debugf("P (K8s Target Provider): failed to remove namespace: %s, traceId: %", err.Error(), span.SpanContext().TraceID().String())
+                                        }</span>
+                                }
+                        }
+
+                }
+        }
+        <span class="cov0" title="0">err = nil
+        return ret, nil</span>
+}
+func deploymentToComponents(deployment v1.Deployment) ([]model.ComponentSpec, error) <span class="cov0" title="0">{
+        components := make([]model.ComponentSpec, len(deployment.Spec.Template.Spec.Containers))
+        for i, c := range deployment.Spec.Template.Spec.Containers </span><span class="cov0" title="0">{
+                component := model.ComponentSpec{
+                        Name:       c.Name,
+                        Properties: make(map[string]interface{}),
+                }
+                component.Properties[model.ContainerImage] = c.Image
+                policy := string(c.ImagePullPolicy)
+                if policy != "" </span><span class="cov0" title="0">{
+                        component.Properties["container.imagePullPolicy"] = policy
+                }</span>
+                <span class="cov0" title="0">if len(c.Ports) &gt; 0 </span><span class="cov0" title="0">{
+                        ports, _ := json.Marshal(c.Ports)
+                        component.Properties["container.ports"] = string(ports)
+                }</span>
+                <span class="cov0" title="0">if len(c.Args) &gt; 0 </span><span class="cov0" title="0">{
+                        args, _ := json.Marshal(c.Args)
+                        component.Properties["container.args"] = string(args)
+                }</span>
+                <span class="cov0" title="0">if len(c.Command) &gt; 0 </span><span class="cov0" title="0">{
+                        commands, _ := json.Marshal(c.Command)
+                        component.Properties["container.commands"] = string(commands)
+                }</span>
+                <span class="cov0" title="0">resources, _ := json.Marshal(c.Resources)
+                if string(resources) != "{}" </span><span class="cov0" title="0">{
+                        component.Properties["container.resources"] = string(resources)
+                }</span>
+                <span class="cov0" title="0">if len(c.VolumeMounts) &gt; 0 </span><span class="cov0" title="0">{
+                        volumeMounts, _ := json.Marshal(c.VolumeMounts)
+                        component.Properties["container.volumeMounts"] = string(volumeMounts)
+                }</span>
+                <span class="cov0" title="0">if len(c.Env) &gt; 0 </span><span class="cov0" title="0">{
+                        for _, e := range c.Env </span><span class="cov0" title="0">{
+                                component.Properties["env."+e.Name] = e.Value
+                        }</span>
+                }
+                <span class="cov0" title="0">components[i] = component</span>
+        }
+        <span class="cov0" title="0">return components, nil</span>
+}
+func metadataToService(scope string, name string, metadata map[string]string) (*apiv1.Service, error) <span class="cov0" title="0">{
+        if len(metadata) == 0 </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+
+        <span class="cov0" title="0">if scope == "" </span><span class="cov0" title="0">{
+                scope = "default"
+        }</span>
+
+        <span class="cov0" title="0">servicePorts := make([]apiv1.ServicePort, 0)
+
+        if v, ok := metadata["service.ports"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                log.Debugf("  P (K8s Target Provider): metadataToService - service ports: %s", v)
+                e := json.Unmarshal([]byte(v), &amp;servicePorts)
+                if e != nil </span><span class="cov0" title="0">{
+                        log.Errorf("  P (K8s Target Provider): metadataToService - unmarshal: %v", e)
+                        return nil, e
+                }</span>
+        } else<span class="cov0" title="0"> {
+                return nil, nil
+        }</span>
+
+        <span class="cov0" title="0">serviceName := utils.ReadString(metadata, "service.name", name)
+        serviceType := utils.ReadString(metadata, "service.type", "ClusterIP")
+
+        service := apiv1.Service{
+                ObjectMeta: metav1.ObjectMeta{
+                        Name:      serviceName,
+                        Namespace: scope,
+                        Labels: map[string]string{
+                                "app": name,
+                        },
+                },
+                Spec: apiv1.ServiceSpec{
+                        Type:  apiv1.ServiceType(serviceType),
+                        Ports: servicePorts,
+                        Selector: map[string]string{
+                                "app": name,
+                        },
+                },
+        }
+        if _, ok := metadata["service.loadBalancerIP"]; ok </span><span class="cov0" title="0">{
+                service.Spec.LoadBalancerIP = utils.ReadString(metadata, "service.loadBalancerIP", "")
+        }</span>
+        <span class="cov0" title="0">annotations := utils.CollectStringMap(metadata, "service.annotation.")
+        if len(annotations) &gt; 0 </span><span class="cov0" title="0">{
+                service.ObjectMeta.Annotations = make(map[string]string)
+                for k, v := range annotations </span><span class="cov0" title="0">{
+                        service.ObjectMeta.Annotations[k[19:]] = v
+                }</span>
+        }
+        <span class="cov0" title="0">return &amp;service, nil</span>
+}
+func int32Ptr(i int32) *int32 <span class="cov0" title="0">{ return &amp;i }</span>
+func componentsToDeployment(scope string, name string, metadata map[string]string, components []model.ComponentSpec, instanceName string) (*v1.Deployment, error) <span class="cov0" title="0">{
+        deployment := v1.Deployment{
+                ObjectMeta: metav1.ObjectMeta{
+                        Name: name,
+                },
+                Spec: v1.DeploymentSpec{
+                        Replicas: int32Ptr(utils.ReadInt32(metadata, "deployment.replicas", 1)),
+                        Selector: &amp;metav1.LabelSelector{
+                                MatchLabels: map[string]string{
+                                        "app": name,
+                                },
+                        },
+                        Template: apiv1.PodTemplateSpec{
+                                ObjectMeta: metav1.ObjectMeta{
+                                        Labels: map[string]string{
+                                                "app": name,
+                                        },
+                                },
+                                Spec: apiv1.PodSpec{
+                                        Containers: []apiv1.Container{},
+                                },
+                        },
+                },
+        }
+
+        for _, c := range components </span><span class="cov0" title="0">{
+                ports := make([]apiv1.ContainerPort, 0)
+                if v, ok := c.Properties["container.ports"].(string); ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                        e := json.Unmarshal([]byte(v), &amp;ports)
+                        if e != nil </span><span class="cov0" title="0">{
+                                return nil, e
+                        }</span>
+                }
+                <span class="cov0" title="0">container := apiv1.Container{
+                        Name:            c.Name,
+                        Image:           c.Properties[model.ContainerImage].(string),
+                        Ports:           ports,
+                        ImagePullPolicy: apiv1.PullPolicy(utils.ReadStringFromMapCompat(c.Properties, "container.imagePullPolicy", "Always")),
+                }
+                if v, ok := c.Properties["container.args"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                        args := make([]string, 0)
+                        e := json.Unmarshal([]byte(fmt.Sprintf("%v", v)), &amp;args)
+                        if e != nil </span><span class="cov0" title="0">{
+                                return nil, e
+                        }</span>
+                        <span class="cov0" title="0">container.Args = args</span>
+                }
+                <span class="cov0" title="0">if v, ok := c.Properties["container.commands"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                        cmds := make([]string, 0)
+                        e := json.Unmarshal([]byte(fmt.Sprintf("%v", v)), &amp;cmds)
+                        if e != nil </span><span class="cov0" title="0">{
+                                return nil, e
+                        }</span>
+                        <span class="cov0" title="0">container.Command = cmds</span>
+                }
+                <span class="cov0" title="0">if v, ok := c.Properties["container.resources"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                        log.Debugf("  &gt;&gt;&gt;&gt;&gt;&gt;component resources %s", v)
+                        res := apiv1.ResourceRequirements{}
+                        e := json.Unmarshal([]byte(fmt.Sprintf("%v", v)), &amp;res)
+                        if e != nil </span><span class="cov0" title="0">{
+                                return nil, e
+                        }</span>
+                        <span class="cov0" title="0">container.Resources = res</span>
+                }
+                <span class="cov0" title="0">if v, ok := c.Properties["container.volumeMounts"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                        mounts := make([]apiv1.VolumeMount, 0)
+                        e := json.Unmarshal([]byte(fmt.Sprintf("%v", v)), &amp;mounts)
+                        if e != nil </span><span class="cov0" title="0">{
+                                return nil, e
+                        }</span>
+                        <span class="cov0" title="0">container.VolumeMounts = mounts</span>
+                }
+                <span class="cov0" title="0">for k, v := range c.Properties </span><span class="cov0" title="0">{
+                        // Transitioning from map[string]string to map[string]interface{}
+                        // for now we'll assume that all relevant values are strings till we
+                        // refactor the code to handle the new format
+                        sv := fmt.Sprintf("%v", v)
+                        if strings.HasPrefix(k, "env.") </span><span class="cov0" title="0">{
+                                if container.Env == nil </span><span class="cov0" title="0">{
+                                        container.Env = make([]apiv1.EnvVar, 0)
+                                }</span>
+                                <span class="cov0" title="0">container.Env = append(container.Env, apiv1.EnvVar{
+                                        Name:  k[4:],
+                                        Value: sv,
+                                })</span>
+                        }
+                }
+                <span class="cov0" title="0">agentName := metadata[ENV_NAME]
+                if agentName != "" </span><span class="cov0" title="0">{
+                        if container.Env == nil </span><span class="cov0" title="0">{
+                                container.Env = make([]apiv1.EnvVar, 0)
+                        }</span>
+                        <span class="cov0" title="0">container.Env = append(container.Env, apiv1.EnvVar{
+                                Name:  ENV_NAME,
+                                Value: agentName + ".default.svc.cluster.local", //agent is currently always installed under deault
+                        })</span>
+                }
+                <span class="cov0" title="0">deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, container)</span>
+        }
+        <span class="cov0" title="0">if v, ok := metadata["deployment.imagePullSecrets"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                secrets := make([]apiv1.LocalObjectReference, 0)
+                e := json.Unmarshal([]byte(v), &amp;secrets)
+                if e != nil </span><span class="cov0" title="0">{
+                        return nil, e
+                }</span>
+                <span class="cov0" title="0">deployment.Spec.Template.Spec.ImagePullSecrets = secrets</span>
+        }
+        <span class="cov0" title="0">if v, ok := metadata["pod.volumes"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                volumes := make([]apiv1.Volume, 0)
+                e := json.Unmarshal([]byte(v), &amp;volumes)
+                if e != nil </span><span class="cov0" title="0">{
+                        return nil, e
+                }</span>
+                <span class="cov0" title="0">deployment.Spec.Template.Spec.Volumes = volumes</span>
+        }
+        <span class="cov0" title="0">if v, ok := metadata["deployment.nodeSelector"]; ok &amp;&amp; v != "" </span><span class="cov0" title="0">{
+                selector := make(map[string]string)
+                e := json.Unmarshal([]byte(v), &amp;selector)
+                if e != nil </span><span class="cov0" title="0">{
+                        return nil, e
+                }</span>
+                <span class="cov0" title="0">deployment.Spec.Template.Spec.NodeSelector = selector</span>
+        }
+
+        <span class="cov0" title="0">data, _ := json.Marshal(deployment)
+        log.Debug(string(data))
+
+        return &amp;deployment, nil</span>
+}
+
+func createProjector(projector string) (IK8sProjector, error) <span class="cov0" title="0">{
+        switch projector </span>{
+        case "noop":<span class="cov0" title="0">
+                return &amp;projectors.NoOpProjector{}, nil</span>
+        case "":<span class="cov0" title="0">
+                return nil, nil</span>
+        }
+        <span class="cov0" title="0">return nil, v1alpha2.NewCOAError(nil, fmt.Sprintf("project type '%s' is unsupported", projector), v1alpha2.BadConfig)</span>
+}
+
+type IK8sProjector interface {
+        ProjectDeployment(scope string, name string, metadata map[string]string, components []model.ComponentSpec, deployment *v1.Deployment) error
+        ProjectService(scope string, name string, metadata map[string]string, service *apiv1.Service) error
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">/*
+ * Copyright (c) Microsoft Corporation.
+ * Licensed under the MIT license.
+ * SPDX-License-Identifier: MIT
+ */
+
+package projectors
+
+import (
+        "github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/model"
+        "github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2"
+        v1 "k8s.io/api/apps/v1"
+        apiv1 "k8s.io/api/core/v1"
+)
+
+type NoOpProjector struct {
+}
+
+func (p *NoOpProjector) ProjectDeployment(scope string, name string, metadata map[string]string, components []model.ComponentSpec, deployment *v1.Deployment) error <span class="cov8" title="1">{
+        return nil
+}</span>
+func (p *NoOpProjector) ProjectService(scope string, name string, metadata map[string]string, service *apiv1.Service) error <span class="cov8" title="1">{
+        if name == "error" </span><span class="cov8" title="1">{
+                return v1alpha2.NewCOAError(nil, "throw error project service", v1alpha2.BadConfig)
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

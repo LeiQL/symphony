@@ -1,0 +1,12 @@
+apiVersion: federation.symphony/v1
+kind: VersionedCatalog
+metadata:
+  labels:
+    app.kubernetes.io/name: versionedcatalog
+    app.kubernetes.io/instance: versionedcatalog-sample
+    app.kubernetes.io/part-of: symphony-k8s
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: symphony-k8s
+  name: versionedcatalog-sample
+spec:
+  # TODO(user): Add fields here

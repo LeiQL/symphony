@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/model"
 	"github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/utils"
@@ -180,10 +181,19 @@ func (s *K8sStateProvider) Upsert(ctx context.Context, entry states.UpsertReques
 	version := model.ReadPropertyCompat(entry.Metadata, "version", nil)
 	resource := model.ReadPropertyCompat(entry.Metadata, "resource", nil)
 	kind := model.ReadPropertyCompat(entry.Metadata, "kind", nil)
+	rootResource := model.ReadPropertyCompat(entry.Metadata, "rootResource", nil)
+	supportStr := model.ReadPropertyCompat(entry.Metadata, "supportVersioning", nil)
 
 	if namespace == "" {
 		namespace = "default"
 	}
+
+	var supportVersioning bool
+	supportVersioning, err = strconv.ParseBool(supportStr)
+	if err != nil {
+		supportVersioning = false
+	}
+	sLog.Info("  P (K8s State): upsert state supportVersioning>>>>>>>>>>>>>>>>>>>>  %v , %v", supportVersioning, namespace)
 
 	resourceId := schema.GroupVersionResource{
 		Group:    group,
@@ -195,6 +205,8 @@ func (s *K8sStateProvider) Upsert(ctx context.Context, entry states.UpsertReques
 		err := v1alpha2.NewCOAError(nil, "found invalid request ID", v1alpha2.BadRequest)
 		return "", err
 	}
+
+	sLog.Info("  P (K8s State): upsert state >>>>>>>>>>>>>>>>>>>>  %v , %v", entry.Value.ID, namespace)
 
 	j, _ := json.Marshal(entry.Value.Body)
 	item, err := s.DynamicClient.Resource(resourceId).Namespace(namespace).Get(ctx, entry.Value.ID, metav1.GetOptions{})
@@ -222,8 +234,45 @@ func (s *K8sStateProvider) Upsert(ctx context.Context, entry states.UpsertReques
 		}
 		unc.SetName(metadata.Name)
 		unc.SetNamespace(metadata.Namespace)
-		unc.SetLabels(metadata.Labels)
 		unc.SetAnnotations(metadata.Annotations)
+
+		if supportVersioning {
+			latestFilterValue := "tag=latest"
+			labelSelector := "rootResource=" + rootResource + "," + latestFilterValue
+			listOptions := metav1.ListOptions{
+				LabelSelector: labelSelector,
+			}
+
+			items, err := s.DynamicClient.Resource(resourceId).Namespace(namespace).List(ctx, listOptions)
+			if err != nil {
+				sLog.Errorf("  P (K8s State): failed to list object with labels %s in namespace %s: %v ", labelSelector, namespace, err)
+				return "", err
+			}
+
+			if len(items.Items) == 0 {
+				sLog.Infof("  P (K8s State): no objects found with labels %s in namespace %s: %v ", labelSelector, namespace, err)
+			}
+
+			for _, v := range items.Items {
+				labels := v.GetLabels()
+				delete(labels, "version")
+				v.SetLabels(labels)
+
+				_, err := s.DynamicClient.Resource(resourceId).Namespace(namespace).Update(ctx, &v, metav1.UpdateOptions{})
+				if err != nil {
+					sLog.Errorf("  P (K8s State): failed to remove labels %s from obj %s in namespace %s: %v ", latestFilterValue, v.GetName(), err)
+					return "", err
+				} else {
+					sLog.Infof("  P (K8s State): remove labels %s from object in namespace %s: %v ", labelSelector, v.GetName(), namespace, err)
+				}
+			}
+			if metadata.Labels == nil {
+				metadata.Labels = make(map[string]string)
+			}
+
+			metadata.Labels["tag"] = "latest"
+			unc.SetLabels(metadata.Labels)
+		}
 
 		_, err = s.DynamicClient.Resource(resourceId).Namespace(namespace).Create(ctx, unc, metav1.CreateOptions{})
 		if err != nil {
@@ -417,12 +466,15 @@ func (s *K8sStateProvider) Delete(ctx context.Context, request states.DeleteRequ
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
 
-	sLog.Info("  P (K8s State): delete state")
+	sLog.Info("  P (K8s State): delete state %v", request.ID)
 
 	namespace := model.ReadPropertyCompat(request.Metadata, "namespace", nil)
 	group := model.ReadPropertyCompat(request.Metadata, "group", nil)
 	version := model.ReadPropertyCompat(request.Metadata, "version", nil)
 	resource := model.ReadPropertyCompat(request.Metadata, "resource", nil)
+	rootResource := model.ReadPropertyCompat(request.Metadata, "rootResource", nil)
+
+	sLog.Info("  P (K8s State): delete state >>>>>>>>>>>>>>>>>>>>  %v", request.ID)
 
 	resourceId := schema.GroupVersionResource{
 		Group:    group,
@@ -436,6 +488,42 @@ func (s *K8sStateProvider) Delete(ctx context.Context, request states.DeleteRequ
 	if request.ID == "" {
 		err := v1alpha2.NewCOAError(nil, "found invalid request ID", v1alpha2.BadRequest)
 		return err
+	}
+
+	item, err := s.DynamicClient.Resource(resourceId).Namespace(namespace).Get(ctx, request.ID, metav1.GetOptions{})
+	if err == nil {
+		labels := item.GetLabels()
+		_, exists := labels["tag"]
+
+		if exists && labels["tag"] == "latest" {
+			labelSelector := "rootResource=" + rootResource
+			listOptions := metav1.ListOptions{
+				LabelSelector: labelSelector,
+			}
+			items, err := s.DynamicClient.Resource(resourceId).Namespace(namespace).List(ctx, listOptions)
+			if err != nil {
+				sLog.Errorf("  P (K8s State): failed to list object with labels %s in namespace %s: %v ", labelSelector, namespace, err)
+				return err
+			}
+
+			var latestItem unstructured.Unstructured
+			var latestTime time.Time
+			for _, v := range items.Items {
+				if latestTime.Before(v.GetCreationTimestamp().Time) {
+					latestTime = v.GetCreationTimestamp().Time
+					latestItem = v
+				}
+			}
+
+			latestItem.SetLabels(map[string]string{"tag": "latest"})
+			_, err = s.DynamicClient.Resource(resourceId).Namespace(namespace).Update(ctx, &latestItem, metav1.UpdateOptions{})
+			if err != nil {
+				sLog.Errorf("  P (K8s State): failed to add labels for obj %s in namespace %s: %v ", latestItem.GetName(), err)
+				return err
+			} else {
+				sLog.Infof("  P (K8s State): add labels %s from object %s in namespace %s: %v ", labelSelector, latestItem.GetName(), namespace, err)
+			}
+		}
 	}
 
 	err = s.DynamicClient.Resource(resourceId).Namespace(namespace).Delete(ctx, request.ID, metav1.DeleteOptions{})
@@ -453,12 +541,14 @@ func (s *K8sStateProvider) Get(ctx context.Context, request states.GetRequest) (
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
 
-	sLog.Info("  P (K8s State): get state")
+	sLog.Info("  P (K8s State): get state    ")
 
 	namespace := model.ReadPropertyCompat(request.Metadata, "namespace", nil)
 	group := model.ReadPropertyCompat(request.Metadata, "group", nil)
 	version := model.ReadPropertyCompat(request.Metadata, "version", nil)
 	resource := model.ReadPropertyCompat(request.Metadata, "resource", nil)
+
+	sLog.Info("  P (K8s State): get state >>>>>>>>>>>>>>>>>>>> %v", request.ID)
 
 	if namespace == "" {
 		namespace = "default"
@@ -500,6 +590,85 @@ func (s *K8sStateProvider) Get(ctx context.Context, request states.GetRequest) (
 		Body: map[string]interface{}{
 			"spec":     item.Object["spec"],
 			"status":   item.Object["status"],
+			"metadata": metadata,
+		},
+	}
+	return ret, nil
+}
+
+func (s *K8sStateProvider) GetLatest(ctx context.Context, request states.GetRequest) (states.StateEntry, error) {
+	ctx, span := observability.StartSpan("K8s State Provider", ctx, &map[string]string{
+		"method": "GetLatest",
+	})
+	var err error = nil
+	defer observ_utils.CloseSpanWithError(span, &err)
+
+	sLog.Info("  P (K8s State): get state with latest label")
+
+	namespace := model.ReadPropertyCompat(request.Metadata, "namespace", nil)
+	group := model.ReadPropertyCompat(request.Metadata, "group", nil)
+	version := model.ReadPropertyCompat(request.Metadata, "version", nil)
+	resource := model.ReadPropertyCompat(request.Metadata, "resource", nil)
+
+	sLog.Info("  P (K8s State): debug get GetLatest >>>>>>>>>>>>>>>>>>>> %v", request.ID)
+
+	if namespace == "" {
+		namespace = "default"
+	}
+
+	resourceId := schema.GroupVersionResource{
+		Group:    group,
+		Version:  version,
+		Resource: resource,
+	}
+
+	if request.ID == "" {
+		err := v1alpha2.NewCOAError(nil, "found invalid request ID", v1alpha2.BadRequest)
+		return states.StateEntry{}, err
+	}
+
+	latestFilterValue := "tag=latest"
+	labelSelector := "rootResource=" + request.ID + "," + latestFilterValue
+	options := metav1.ListOptions{
+		LabelSelector: labelSelector,
+	}
+
+	items, err := s.DynamicClient.Resource(resourceId).Namespace(namespace).List(ctx, options)
+	if err != nil {
+		sLog.Errorf("  P (K8s State): failed to get latest object %s in namespace %s: %v ", request.ID, namespace, err)
+		return states.StateEntry{}, err
+	}
+
+	var latestItem unstructured.Unstructured
+	var latestTime time.Time
+
+	if len(items.Items) == 0 {
+		err := v1alpha2.NewCOAError(nil, "failed to find latest object", v1alpha2.NotFound)
+		return states.StateEntry{}, err
+	}
+
+	for _, v := range items.Items {
+		if latestTime.Before(v.GetCreationTimestamp().Time) {
+			latestTime = v.GetCreationTimestamp().Time
+			latestItem = v
+		}
+	}
+
+	generation := latestItem.GetGeneration()
+
+	metadata := model.ObjectMeta{
+		Name:        latestItem.GetName(),
+		Namespace:   latestItem.GetNamespace(),
+		Labels:      latestItem.GetLabels(),
+		Annotations: latestItem.GetAnnotations(),
+	}
+
+	ret := states.StateEntry{
+		ID:   request.ID,
+		ETag: strconv.FormatInt(generation, 10),
+		Body: map[string]interface{}{
+			"spec":     latestItem.Object["spec"],
+			"status":   latestItem.Object["status"],
 			"metadata": metadata,
 		},
 	}
