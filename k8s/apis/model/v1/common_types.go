@@ -115,7 +115,8 @@ type SolutionSpec struct {
 	Metadata    map[string]string `json:"metadata,omitempty"`
 	Components  []ComponentSpec   `json:"components,omitempty"`
 	// Defines the version of a particular resource
-	Version string `json:"version,omitempty"`
+	Version      string `json:"version,omitempty"`
+	RootResource string `json:"rootResource,omitempty"`
 }
 
 // +kubebuilder:object:generate=true

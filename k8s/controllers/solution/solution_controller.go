@@ -8,13 +8,16 @@ package solution
 
 import (
 	"context"
+	"encoding/json"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
+	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 
 	solutionv1 "gopls-workspace/apis/solution/v1"
+
+	api_utils "github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/utils"
 )
 
 // SolutionReconciler reconciles a Solution object
@@ -37,9 +40,35 @@ type SolutionReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
 func (r *SolutionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	log := ctrllog.FromContext(ctx)
+	log.Info("Reconcile Solution")
 
-	// TODO(user): your logic here
+	// Get instance
+	solution := &solutionv1.Solution{}
+	if err := r.Client.Get(ctx, req.NamespacedName, solution); err != nil {
+		log.Error(err, "unable to fetch Solution object")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	if solution.Status.Properties == nil {
+		solution.Status.Properties = make(map[string]string)
+	}
+
+	version := solution.Spec.Version
+	name := solution.Spec.RootResource
+	solutionName := name + ":" + version
+	jData, _ := json.Marshal(solution)
+	if solution.ObjectMeta.DeletionTimestamp.IsZero() { // update
+		err := api_utils.UpsertSolution(ctx, "http://symphony-service:8080/v1alpha2/", solutionName, "admin", "", jData, req.Namespace)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	} else { // delete
+		err := api_utils.DeleteSolution(ctx, "http://symphony-service:8080/v1alpha2/", solutionName, "admin", "", req.Namespace)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	}
 
 	return ctrl.Result{}, nil
 }
