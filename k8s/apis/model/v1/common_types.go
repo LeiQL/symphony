@@ -191,6 +191,7 @@ type CatalogSpec struct {
 	Generation string               `json:"generation,omitempty"`
 }
 
+// +kubebuilder:object:generate=true
 type VersionedCatalogSpec struct {
 	DisplayName string            `json:"displayName,omitempty"`
 	Metadata    map[string]string `json:"metadata,omitempty"`

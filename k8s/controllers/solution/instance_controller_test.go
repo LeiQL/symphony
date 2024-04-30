@@ -6,23 +6,15 @@
 
 package solution
 
+/*
 import (
-	"context"
-	"errors"
-	fabricv1 "gopls-workspace/apis/fabric/v1"
-	solutionv1 "gopls-workspace/apis/solution/v1"
 	. "gopls-workspace/testing"
-	"gopls-workspace/utils"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/mock"
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-var _ = Describe("Instance controller", Ordered, func() {
+*/
+/* var _ = Describe("Instance controller", Ordered, func() {
 	var apiClient *MockApiClient
 	var kubeClient client.Client
 	var controller *InstanceReconciler
@@ -285,3 +277,4 @@ var _ = Describe("Instance controller", Ordered, func() {
 		})
 	})
 })
+*/

@@ -248,7 +248,7 @@ func (t *SolutionsManager) GetLatestState(ctx context.Context, id string, namesp
 		return model.SolutionState{}, err
 	}
 
-	ret, err := getSolutionState(id, target.Body)
+	ret, err := getSolutionState(target.Body)
 	if err != nil {
 		return model.SolutionState{}, err
 	}

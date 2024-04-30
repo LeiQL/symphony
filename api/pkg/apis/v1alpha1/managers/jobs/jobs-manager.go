@@ -378,7 +378,7 @@ func (s *JobsManager) HandleJobEvent(ctx context.Context, event v1alpha2.Event) 
 
 		switch objectType {
 		case "instance":
-			log.Debugf(" M (Job): handling instance job %s", job.Id)
+			log.Debugf(" M (Job): handling instance job  >>>>>>>>>>>>>>>>>>>>>>>>>>>>  %s, %s", job.Id, namespace)
 			instanceName := job.Id
 			var instance model.InstanceState
 			//get intance
@@ -388,9 +388,13 @@ func (s *JobsManager) HandleJobEvent(ctx context.Context, event v1alpha2.Event) 
 				return err //TODO: instance is gone
 			}
 
+			log.Debugf(" M (Job): handling instance job solution name >>>>>>>>>>>>>>>>>>>>>>>>>>>>  %s", instance.Spec.Solution)
+
 			//get solution
 			var solution model.SolutionState
 			solution, err = s.apiClient.GetSolution(ctx, instance.Spec.Solution, namespace)
+			log.Debugf(" M (Job): handling instance job solution after GetSolution >>>>>>>>>>>>>>>>>>>>>>>>>>>>  %s", solution.ObjectMeta.Name)
+
 			if err != nil {
 				solution = model.SolutionState{
 					ObjectMeta: model.ObjectMeta{

@@ -138,7 +138,17 @@ func (r *InstanceReconciler) deploymentBuilder(ctx context.Context, object recon
 		TargetCandidates: []fabric_v1.Target{},
 	}
 
-	if err := r.Get(ctx, types.NamespacedName{Name: instance.Spec.Solution, Namespace: instance.Namespace}, &deploymentResources.Solution); err != nil {
+	log.Info(fmt.Sprintf("Instance controller>>>>>>>>>>>>>>>>>>>>> v2v2: try to get solution %v", instance.Spec.Solution))
+
+	// Get solution
+	solution, err := r.ApiClient.GetSolution(ctx, instance.Spec.Solution, instance.Namespace)
+	//api_utils.GetSolution(ctx, "http://symphony-service:8080/v1alpha2/", instance.Spec.Solution, "admin", "", instance.Namespace)
+	if err != nil {
+		log.Error(v1alpha2.NewCOAError(err, "failed to get solution from symphony", v1alpha2.SolutionGetFailed), "proceed with no solution found")
+	}
+
+	log.Info(fmt.Sprintf("Instance controller>>>>>>>>>>>>>>>>>>>>>>>: try to get solution response  %v", solution.ObjectMeta.Name))
+	if err := r.Get(ctx, types.NamespacedName{Name: solution.ObjectMeta.Name, Namespace: instance.Namespace}, &deploymentResources.Solution); err != nil {
 		log.Error(v1alpha2.NewCOAError(err, "failed to get solution", v1alpha2.SolutionGetFailed), "proceed with no solution found")
 	}
 	// Get targets
@@ -152,7 +162,8 @@ func (r *InstanceReconciler) deploymentBuilder(ctx context.Context, object recon
 		log.Error(v1alpha2.NewCOAError(nil, "no target candidates found", v1alpha2.TargetCandidatesNotFound), "proceed with no target candidates found")
 	}
 
-	deployment, err := utils.CreateSymphonyDeployment(ctx, *instance, deploymentResources.Solution, deploymentResources.TargetCandidates, object.GetNamespace())
+	deployment, err = utils.CreateSymphonyDeployment(ctx, *instance, deploymentResources.Solution, deploymentResources.TargetCandidates, object.GetNamespace())
+
 	if err != nil {
 		return nil, err
 	}

@@ -12,12 +12,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/eclipse-symphony/symphony/api/constants"
 	"github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/model"
@@ -49,22 +51,26 @@ type (
 		QueueDeploymentJob(ctx context.Context, namespace string, isDelete bool, deployment model.DeploymentSpec) error
 	}
 
+	Getter interface {
+		GetInstance(ctx context.Context, instance string, namespace string) (model.InstanceState, error)
+		GetSolution(ctx context.Context, solution string, namespace string) (model.SolutionState, error)
+		GetTarget(ctx context.Context, target string, namespace string) (model.TargetState, error)
+	}
+
 	ApiClient interface {
 		SummaryGetter
 		Dispatcher
+		Getter
 		GetInstancesForAllNamespaces(ctx context.Context) ([]model.InstanceState, error)
 		GetInstances(ctx context.Context, namespace string) ([]model.InstanceState, error)
-		GetInstance(ctx context.Context, instance string, namespace string) (model.InstanceState, error)
+		GetSolutions(ctx context.Context, namespace string) ([]model.SolutionState, error)
+		GetTargetsForAllNamespaces(ctx context.Context) ([]model.TargetState, error)
+		GetTargets(ctx context.Context, namespace string) ([]model.TargetState, error)
 		CreateInstance(ctx context.Context, instance string, payload []byte, namespace string) error
 		DeleteInstance(ctx context.Context, instance string, namespace string) error
 		DeleteTarget(ctx context.Context, target string, namespace string) error
-		GetSolutions(ctx context.Context, namespace string) ([]model.SolutionState, error)
-		GetSolution(ctx context.Context, solution string, namespace string) (model.SolutionState, error)
 		CreateSolution(ctx context.Context, solution string, payload []byte, namespace string) error
 		DeleteSolution(ctx context.Context, solution string, namespace string) error
-		GetTargetsForAllNamespaces(ctx context.Context) ([]model.TargetState, error)
-		GetTarget(ctx context.Context, target string, namespace string) (model.TargetState, error)
-		GetTargets(ctx context.Context, namespace string) ([]model.TargetState, error)
 		CreateTarget(ctx context.Context, target string, payload []byte, namespace string) error
 		Reconcile(ctx context.Context, deployment model.DeploymentSpec, isDelete bool, namespace string) (model.SummarySpec, error)
 	}
@@ -272,7 +278,19 @@ func (a *apiClient) GetSolution(ctx context.Context, solution string, namespace 
 		return ret, err
 	}
 
-	response, err := a.callRestAPI(ctx, "solutions/"+url.QueryEscape(solution)+"?namespace="+url.QueryEscape(namespace), "GET", nil, token)
+	log.Infof("apiClient.GetSolution:>>>>>>>>>>>>  solution: %s, namespace: %s", solution, namespace)
+
+	var name string
+	var version string
+	parts := strings.Split(solution, ":")
+	if len(parts) == 2 {
+		name = parts[0]
+		version = parts[1]
+	} else {
+		return ret, errors.New("invalid solution name")
+	}
+
+	response, err := a.callRestAPI(ctx, "solutions/"+url.QueryEscape(name)+"/"+url.QueryEscape(version)+"?namespace="+url.QueryEscape(namespace), "GET", nil, token)
 	if err != nil {
 		return ret, err
 	}
@@ -497,6 +515,9 @@ func (a *apiClient) callRestAPI(ctx context.Context, route string, method string
 		"http.method": method,
 		"http.url":    urlString,
 	})
+
+	log.Debugf("apiClient.callRestAPI:>>>>>>>>>>>>  route: %s, urlString: %s, method: %s", route, urlString, method)
+
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
 
