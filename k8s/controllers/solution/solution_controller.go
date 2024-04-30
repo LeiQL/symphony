@@ -20,6 +20,7 @@ import (
 	solutionv1 "gopls-workspace/apis/solution/v1"
 
 	api_utils "github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/utils"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // SolutionReconciler reconciles a Solution object
@@ -87,7 +88,6 @@ func (r *SolutionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 				return ctrl.Result{}, nil
 			}
 		}
-
 	} else { // delete
 		value, exists := solution.Labels["tag"]
 		log.Info(fmt.Sprintf("Solution update: %v, %v", value, exists))
@@ -114,6 +114,7 @@ func (r *SolutionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 // SetupWithManager sets up the controller with the Manager.
 func (r *SolutionReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		WithEventFilter(predicate.GenerationChangedPredicate{}).
 		For(&solutionv1.Solution{}).
 		Complete(r)
 }
