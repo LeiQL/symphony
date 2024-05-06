@@ -100,12 +100,27 @@ type InstanceSpec struct {
 }
 
 // +kubebuilder:object:generate=true
+type TargetContainerSpec struct {
+	DisplayName string `json:"displayName,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type InstanceContainerSpec struct {
+	DisplayName string `json:"displayName,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
 type SolutionSpec struct {
 	DisplayName string            `json:"displayName,omitempty"`
 	Metadata    map[string]string `json:"metadata,omitempty"`
 	Components  []ComponentSpec   `json:"components,omitempty"`
 	// Defines the version of a particular resource
 	Version string `json:"version,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type SolutionContainerSpec struct {
+	DisplayName string `json:"displayName,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -150,6 +165,11 @@ type CampaignSpec struct {
 }
 
 // +kubebuilder:object:generate=true
+type CampaignContainerSpec struct {
+	DisplayName string `json:"displayName,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
 type CatalogSpec struct {
 	Type     string            `json:"type"`
 	Metadata map[string]string `json:"metadata,omitempty"`
@@ -159,6 +179,11 @@ type CatalogSpec struct {
 	ParentName string               `json:"parentName,omitempty"`
 	ObjectRef  model.ObjectRef      `json:"objectRef,omitempty"`
 	Generation string               `json:"generation,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type CatalogContainerSpec struct {
+	DisplayName string `json:"displayName,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
