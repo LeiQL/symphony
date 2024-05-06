@@ -99,13 +99,33 @@ type InstanceSpec struct {
 	ReconciliationPolicy *ReconciliationPolicySpec `json:"reconciliationPolicy,omitempty"`
 }
 
+// Defines the desired state of VersionedTargetSpec
+// +kubebuilder:object:generate=true
+type VersionedTargetSpec struct {
+	DisplayName string            `json:"displayName,omitempty"`
+	Metadata    map[string]string `json:"metadata,omitempty"`
+}
+
 // +kubebuilder:object:generate=true
 type SolutionSpec struct {
 	DisplayName string            `json:"displayName,omitempty"`
 	Metadata    map[string]string `json:"metadata,omitempty"`
 	Components  []ComponentSpec   `json:"components,omitempty"`
 	// Defines the version of a particular resource
-	Version string `json:"version,omitempty"`
+	Version      string `json:"version,omitempty"`
+	RootResource string `json:"rootResource,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type VersionedSolutionSpec struct {
+	DisplayName string            `json:"displayName,omitempty"`
+	Metadata    map[string]string `json:"metadata,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type VersionedInstanceSpec struct {
+	DisplayName string            `json:"displayName,omitempty"`
+	Metadata    map[string]string `json:"metadata,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -150,6 +170,12 @@ type CampaignSpec struct {
 }
 
 // +kubebuilder:object:generate=true
+type VersionedCampaignSpec struct {
+	DisplayName string            `json:"displayName,omitempty"`
+	Metadata    map[string]string `json:"metadata,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
 type CatalogSpec struct {
 	SiteId   string            `json:"siteId"`
 	Type     string            `json:"type"`
@@ -160,6 +186,12 @@ type CatalogSpec struct {
 	ParentName string               `json:"parentName,omitempty"`
 	ObjectRef  model.ObjectRef      `json:"objectRef,omitempty"`
 	Generation string               `json:"generation,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type VersionedCatalogSpec struct {
+	DisplayName string            `json:"displayName,omitempty"`
+	Metadata    map[string]string `json:"metadata,omitempty"`
 }
 
 // +kubebuilder:object:generate=true

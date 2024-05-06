@@ -1,0 +1,27 @@
+# permissions for end users to view versionedtarget1s.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: versionedtarget1-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: symphony-k8s
+    app.kubernetes.io/part-of: symphony-k8s
+    app.kubernetes.io/managed-by: kustomize
+  name: versionedtarget1-viewer-role
+rules:
+- apiGroups:
+  - fabric.symphony
+  resources:
+  - versionedtarget1s
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - fabric.symphony
+  resources:
+  - versionedtarget1s/status
+  verbs:
+  - get

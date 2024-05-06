@@ -20,6 +20,11 @@ resources:
 - bases/fabric.symphony_devices.yaml
 - bases/federation.symphony_sites.yaml
 - bases/federation.symphony_catalogs.yaml
+- bases/federation.symphony_versionedcatalogs.yaml
+- bases/fabric.symphony_versionedtargets.yaml
+- bases/workflow.symphony_versionedcampaigns.yaml
+- bases/solution.symphony_versionedinstances.yaml
+- bases/solution.symphony_versionedsolutions.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.

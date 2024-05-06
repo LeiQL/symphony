@@ -1,0 +1,12 @@
+apiVersion: solution.symphony.symphony/v1alpha1
+kind: Versionedsolution
+metadata:
+  labels:
+    app.kubernetes.io/name: versionedsolution
+    app.kubernetes.io/instance: versionedsolution-sample
+    app.kubernetes.io/part-of: symphony-k8s
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: symphony-k8s
+  name: versionedsolution-sample
+spec:
+  # TODO(user): Add fields here

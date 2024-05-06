@@ -297,6 +297,34 @@ func main() {
 			os.Exit(1)
 		}
 	}
+	if err = (&federationcontrollers.VersionedCatalogReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "VersionedCatalog1")
+		os.Exit(1)
+	}
+	if err = (&fabriccontrollers.VersionedTargetReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "VersionedTarget1")
+		os.Exit(1)
+	}
+	if err = (&workflowcontrollers.VersionedCampaignReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "VersionedCampaign1")
+		os.Exit(1)
+	}
+	if err = (&solutioncontrollers.VersionedInstanceReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "VersionedInstance1")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

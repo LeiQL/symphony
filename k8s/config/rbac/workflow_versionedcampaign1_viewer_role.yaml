@@ -1,0 +1,27 @@
+# permissions for end users to view versionedcampaign1s.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: versionedcampaign1-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: symphony-k8s
+    app.kubernetes.io/part-of: symphony-k8s
+    app.kubernetes.io/managed-by: kustomize
+  name: versionedcampaign1-viewer-role
+rules:
+- apiGroups:
+  - workflow.symphony
+  resources:
+  - versionedcampaign1s
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - workflow.symphony
+  resources:
+  - versionedcampaign1s/status
+  verbs:
+  - get
