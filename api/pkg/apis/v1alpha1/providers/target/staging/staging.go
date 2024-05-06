@@ -181,7 +181,11 @@ func (i *StagingTargetProvider) Apply(ctx context.Context, deployment model.Depl
 	if catalog.Spec == nil {
 		catalog.ObjectMeta.Name = deployment.Instance.ObjectMeta.Name + "-" + i.Config.TargetName
 		catalog.Spec = &model.CatalogSpec{
+<<<<<<< HEAD
 			Type: "staged",
+=======
+			Type:   "staged",
+>>>>>>> 9e6abf3 (Remove CatalogSpec.SiteId (#11))
 		}
 	}
 	if catalog.Spec.Properties == nil {
