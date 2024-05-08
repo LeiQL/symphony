@@ -12,24 +12,19 @@ import (
 
 // TODO: all state objects should converge to this paradigm: id, spec and status
 type CatalogContainerState struct {
-	ObjectMeta ObjectMeta            `json:"metadata,omitempty"`
-	Spec       *CatalogContainerSpec `json:"spec,omitempty"`
+	ObjectMeta ObjectMeta              `json:"metadata,omitempty"`
+	Spec       *CatalogContainerSpec   `json:"spec,omitempty"`
+	Status     *CatalogContainerStatus `json:"status,omitempty"`
 }
 
 type CatalogContainerSpec struct {
-	Name string `json:"name"`
+}
+
+type CatalogContainerStatus struct {
+	Properties map[string]string `json:"properties"`
 }
 
 func (c CatalogContainerSpec) DeepEquals(other IDeepEquals) (bool, error) {
-	otherC, ok := other.(CatalogContainerSpec)
-	if !ok {
-		return false, errors.New("parameter is not a CatalogContainerSpec type")
-	}
-
-	if c.Name != otherC.Name {
-		return false, nil
-	}
-
 	return true, nil
 }
 

@@ -15,11 +15,7 @@ spec:
     singular: targetcontainer
   scope: Namespaced
   versions:
-  - additionalPrinterColumns:
-    - jsonPath: .status.properties.status
-      name: Status
-      type: string
-    name: v1
+  - name: v1
     schema:
       openAPIV3Schema:
         description: Target is the Schema for the targets API
@@ -37,80 +33,16 @@ spec:
           metadata:
             type: object
           spec:
-            properties:
-              displayName:
-                type: string
             type: object
           status:
             description: TargetContainerStatus defines the observed state of Target
             properties:
-              lastModified:
-                format: date-time
-                type: string
               properties:
                 additionalProperties:
                   type: string
                 description: 'Important: Run "make" to regenerate code after modifying
                   this file'
                 type: object
-              provisioningStatus:
-                description: Defines the state of the ARM resource for long running
-                  operations
-                properties:
-                  error:
-                    description: Defines an error in the ARM resource for long running
-                      operations
-                    properties:
-                      code:
-                        type: string
-                      details:
-                        items:
-                          description: Defines an error for symphony target
-                          properties:
-                            code:
-                              type: string
-                            details:
-                              items:
-                                description: Defines an error for components defined
-                                  in symphony
-                                properties:
-                                  code:
-                                    type: string
-                                  message:
-                                    type: string
-                                  target:
-                                    type: string
-                                type: object
-                              type: array
-                            message:
-                              type: string
-                            target:
-                              type: string
-                          type: object
-                        type: array
-                      message:
-                        type: string
-                      target:
-                        type: string
-                    type: object
-                  failureCause:
-                    type: string
-                  logErrors:
-                    type: boolean
-                  operationId:
-                    type: string
-                  output:
-                    additionalProperties:
-                      type: string
-                    type: object
-                  status:
-                    type: string
-                required:
-                - operationId
-                - status
-                type: object
-            required:
-            - provisioningStatus
             type: object
         type: object
     served: true

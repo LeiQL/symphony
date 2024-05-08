@@ -11,24 +11,19 @@ import (
 )
 
 type SolutionContainerState struct {
-	ObjectMeta ObjectMeta             `json:"metadata,omitempty"`
-	Spec       *SolutionContainerSpec `json:"spec,omitempty"`
+	ObjectMeta ObjectMeta               `json:"metadata,omitempty"`
+	Spec       *SolutionContainerSpec   `json:"spec,omitempty"`
+	Status     *SolutionContainerStatus `json:"status,omitempty"`
 }
 
 type SolutionContainerSpec struct {
-	Name string `json:"name,omitempty"`
+}
+
+type SolutionContainerStatus struct {
+	Properties map[string]string `json:"properties"`
 }
 
 func (c SolutionContainerSpec) DeepEquals(other IDeepEquals) (bool, error) {
-	otherC, ok := other.(SolutionContainerSpec)
-	if !ok {
-		return false, errors.New("parameter is not a SolutionContainerSpec type")
-	}
-
-	if c.Name != otherC.Name {
-		return false, nil
-	}
-
 	return true, nil
 }
 

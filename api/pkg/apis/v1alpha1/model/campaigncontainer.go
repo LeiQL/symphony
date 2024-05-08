@@ -11,24 +11,19 @@ import (
 )
 
 type CampaignContainerState struct {
-	ObjectMeta ObjectMeta             `json:"metadata,omitempty"`
-	Spec       *CampaignContainerSpec `json:"spec,omitempty"`
+	ObjectMeta ObjectMeta               `json:"metadata,omitempty"`
+	Spec       *CampaignContainerSpec   `json:"spec,omitempty"`
+	Status     *CampaignContainerStatus `json:"status,omitempty"`
 }
 
 type CampaignContainerSpec struct {
-	Name string `json:"name,omitempty"`
+}
+
+type CampaignContainerStatus struct {
+	Properties map[string]string `json:"properties"`
 }
 
 func (c CampaignContainerSpec) DeepEquals(other IDeepEquals) (bool, error) {
-	otherC, ok := other.(CampaignContainerSpec)
-	if !ok {
-		return false, errors.New("parameter is not a CampaignContainerSpec type")
-	}
-
-	if c.Name != otherC.Name {
-		return false, nil
-	}
-
 	return true, nil
 }
 

@@ -7,15 +7,12 @@
 package v1
 
 import (
-	apimodel "github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/model"
 	k8smodel "github.com/eclipse-symphony/symphony/k8s/apis/model/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type CatalogContainerStatus struct {
-	Properties         map[string]string           `json:"properties"`
-	ProvisioningStatus apimodel.ProvisioningStatus `json:"provisioningStatus"`
-	LastModified       metav1.Time                 `json:"lastModified,omitempty"`
+	Properties map[string]string `json:"properties"`
 }
 
 // +kubebuilder:object:root=true
