@@ -12,7 +12,7 @@ installServiceExt: true
 global:
   azure:
     identity:
-      enabled: false
+      isEnabled: false
 observability:
   tracing:
     exporter:
@@ -27,8 +27,25 @@ redis:
   image: redis/redis-stack-server:latest
   port: 6379
 parent:
-  url: 
+  url:
   username: admin
   password:
 siteId: hq
 imagePrivateRegistryUrl: ghcr.io
+api:
+  apiContainerPortHttp: 8080
+  apiContainerPortHttps: 8081
+symphony:
+  incluster:
+    httpsport: 8081
+    httpport: 8080
+  extension:
+    httpsport: 8081
+    httpport: 8080
+Azure:
+  proxySettings:
+    isProxyEnabled: false
+    httpProxy: ""
+    httpsProxy: ""
+    noProxy: ""
+    proxyCert: ""
