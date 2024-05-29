@@ -69,7 +69,13 @@ func (o *TargetsVendor) GetEndpoints() []v1alpha2.Endpoint {
 			Route:      route + "/registry",
 			Version:    o.Version,
 			Handler:    o.onRegistry,
-			Parameters: []string{"name?"},
+			Parameters: []string{"name", "version?"},
+		},
+		{
+			Methods: []string{fasthttp.MethodGet},
+			Route:   route + "/registry",
+			Version: o.Version,
+			Handler: o.onRegistryList,
 		},
 		{
 			Methods: []string{fasthttp.MethodPost},
@@ -82,21 +88,21 @@ func (o *TargetsVendor) GetEndpoints() []v1alpha2.Endpoint {
 			Route:      route + "/ping",
 			Version:    o.Version,
 			Handler:    o.onHeartBeat,
-			Parameters: []string{"name"},
+			Parameters: []string{"name", "version"},
 		},
 		{
 			Methods:    []string{fasthttp.MethodPut},
 			Route:      route + "/status",
 			Version:    o.Version,
 			Handler:    o.onStatus,
-			Parameters: []string{"name", "component?"},
+			Parameters: []string{"name", "version", "component?"},
 		},
 		{
 			Methods:    []string{fasthttp.MethodGet},
 			Route:      route + "/download",
 			Version:    o.Version,
 			Handler:    o.onDownload,
-			Parameters: []string{"doc-type", "name"},
+			Parameters: []string{"doc-type", "name", "version"},
 		},
 	}
 }
@@ -120,31 +126,40 @@ func (c *TargetsVendor) onRegistry(request v1alpha2.COARequest) v1alpha2.COAResp
 	if !exist {
 		namespace = constants.DefaultScope
 	}
+
+	version := request.Parameters["__version"]
+	rootResource := request.Parameters["__name"]
+	var id string
+	var resourceId string
+	if version != "" {
+		id = rootResource + "-" + version
+		resourceId = rootResource + ":" + version
+	} else {
+		id = rootResource
+		resourceId = rootResource
+	}
+	tLog.Infof("V (Targets): onCampaigns, id: %s, version: %s", id, version)
+
 	switch request.Method {
 	case fasthttp.MethodGet:
 		ctx, span := observability.StartSpan("onRegistry-GET", pCtx, nil)
-		id := request.Parameters["__name"]
 		var err error
 		var state interface{}
-		isArray := false
-		if id == "" {
-			// Change namespace back to empty to indicate ListSpec need to query all namespaces
-			if !exist {
-				namespace = ""
-			}
-			state, err = c.TargetsManager.ListState(ctx, namespace)
-			isArray = true
+
+		if version == "latest" {
+			state, err = c.TargetsManager.GetLatestState(ctx, rootResource, namespace)
 		} else {
 			state, err = c.TargetsManager.GetState(ctx, id, namespace)
 		}
+
 		if err != nil {
-			tLog.Infof("V (Targets) : onRegistry failed - %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+			tLog.Infof("V (Targets) : onRegistry Get failed - %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
 			return observ_utils.CloseSpanWithCOAResponse(span, v1alpha2.COAResponse{
 				State: v1alpha2.InternalError,
 				Body:  []byte(err.Error()),
 			})
 		}
-		jData, _ := utils.FormatObject(state, isArray, request.Parameters["path"], request.Parameters["doc-type"])
+		jData, _ := utils.FormatObject(state, false, request.Parameters["path"], request.Parameters["doc-type"])
 		resp := observ_utils.CloseSpanWithCOAResponse(span, v1alpha2.COAResponse{
 			State:       v1alpha2.OK,
 			Body:        jData,
@@ -156,12 +171,20 @@ func (c *TargetsVendor) onRegistry(request v1alpha2.COARequest) v1alpha2.COAResp
 		return resp
 	case fasthttp.MethodPost:
 		ctx, span := observability.StartSpan("onRegistry-POST", pCtx, nil)
-		id := request.Parameters["__name"]
+
+		if version == "" || version == "latest" {
+			tLog.Infof("V (Targets): onRegistry Post failed - version is required for POST, traceId: %s", span.SpanContext().TraceID().String())
+			return observ_utils.CloseSpanWithCOAResponse(span, v1alpha2.COAResponse{
+				State: v1alpha2.InternalError,
+				Body:  []byte("version is required for POST"),
+			})
+		}
+
 		binding := request.Parameters["with-binding"]
 		var target model.TargetState
 		err := json.Unmarshal(request.Body, &target)
 		if err != nil {
-			tLog.Infof("V (Targets) : onRegistry failed - %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+			tLog.Infof("V (Targets) : onRegistry Post failed - %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
 			return observ_utils.CloseSpanWithCOAResponse(span, v1alpha2.COAResponse{
 				State: v1alpha2.InternalError,
 				Body:  []byte(err.Error()),
@@ -170,6 +193,13 @@ func (c *TargetsVendor) onRegistry(request v1alpha2.COARequest) v1alpha2.COAResp
 		if target.ObjectMeta.Name == "" {
 			target.ObjectMeta.Name = id
 		}
+		if target.Spec.Version == "" && version != "" {
+			target.Spec.Version = version
+		}
+		if target.Spec.RootResource == "" && rootResource != "" {
+			target.Spec.RootResource = rootResource
+		}
+
 		if binding != "" {
 			if binding == "staging" {
 				target.Spec.ForceRedeploy = true
@@ -227,7 +257,7 @@ func (c *TargetsVendor) onRegistry(request v1alpha2.COARequest) v1alpha2.COAResp
 					"namespace":  namespace,
 				},
 				Body: v1alpha2.JobData{
-					Id:     id,
+					Id:     resourceId,
 					Action: v1alpha2.JobUpdate,
 					Scope:  namespace,
 				},
@@ -238,7 +268,6 @@ func (c *TargetsVendor) onRegistry(request v1alpha2.COARequest) v1alpha2.COAResp
 		})
 	case fasthttp.MethodDelete:
 		ctx, span := observability.StartSpan("onRegistry-DELETE", pCtx, nil)
-		id := request.Parameters["__name"]
 		direct := request.Parameters["direct"]
 
 		if c.Config.Properties["useJobManager"] == "true" && direct != "true" {
@@ -248,7 +277,7 @@ func (c *TargetsVendor) onRegistry(request v1alpha2.COARequest) v1alpha2.COAResp
 					"namespace":  namespace,
 				},
 				Body: v1alpha2.JobData{
-					Id:     id,
+					Id:     resourceId,
 					Action: v1alpha2.JobDelete,
 					Scope:  namespace,
 				},
@@ -257,9 +286,9 @@ func (c *TargetsVendor) onRegistry(request v1alpha2.COARequest) v1alpha2.COAResp
 				State: v1alpha2.OK,
 			})
 		} else {
-			err := c.TargetsManager.DeleteSpec(ctx, id, namespace)
+			err := c.TargetsManager.DeleteSpec(ctx, resourceId, namespace)
 			if err != nil {
-				tLog.Infof("V (Targets) : onRegistry failed - %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+				tLog.Infof("V (Targets) : onRegistry Delete failed - %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
 				return observ_utils.CloseSpanWithCOAResponse(span, v1alpha2.COAResponse{
 					State: v1alpha2.InternalError,
 					Body:  []byte(err.Error()),
@@ -271,6 +300,56 @@ func (c *TargetsVendor) onRegistry(request v1alpha2.COARequest) v1alpha2.COAResp
 		})
 	}
 	tLog.Infof("V (Targets) : onRegistry failed - method not allowed, traceId: %s", span.SpanContext().TraceID().String())
+	resp := v1alpha2.COAResponse{
+		State:       v1alpha2.MethodNotAllowed,
+		Body:        []byte("{\"result\":\"405 - method not allowed\"}"),
+		ContentType: "application/json",
+	}
+	observ_utils.UpdateSpanStatusFromCOAResponse(span, resp)
+	return resp
+}
+
+func (c *TargetsVendor) onRegistryList(request v1alpha2.COARequest) v1alpha2.COAResponse {
+	pCtx, span := observability.StartSpan("Solutions Vendor", request.Context, &map[string]string{
+		"method": "onRegistryList",
+	})
+	defer span.End()
+	tLog.Infof("V (Targets): onRegistryList, method: %s, traceId: %s", request.Method, span.SpanContext().TraceID().String())
+	namespace, exist := request.Parameters["namespace"]
+	if !exist {
+		namespace = "default"
+	}
+	switch request.Method {
+	case fasthttp.MethodGet:
+		ctx, span := observability.StartSpan("onRegistryList-GET", pCtx, nil)
+
+		var err error
+		var state interface{}
+		// Change namespace back to empty to indicate ListSpec need to query all namespaces
+		if !exist {
+			namespace = ""
+		}
+		state, err = c.TargetsManager.ListState(ctx, namespace)
+
+		if err != nil {
+			tLog.Infof("V (Targets): onRegistryList failed - %s, traceId: %s", err.Error(), span.SpanContext().TraceID().String())
+			return observ_utils.CloseSpanWithCOAResponse(span, v1alpha2.COAResponse{
+				State: v1alpha2.InternalError,
+				Body:  []byte(err.Error()),
+			})
+		}
+		jData, _ := utils.FormatObject(state, true, request.Parameters["path"], request.Parameters["doc-type"])
+		resp := observ_utils.CloseSpanWithCOAResponse(span, v1alpha2.COAResponse{
+			State:       v1alpha2.OK,
+			Body:        jData,
+			ContentType: "application/json",
+		})
+		if request.Parameters["doc-type"] == "yaml" {
+			resp.ContentType = "application/text"
+		}
+		return resp
+	}
+
 	resp := v1alpha2.COAResponse{
 		State:       v1alpha2.MethodNotAllowed,
 		Body:        []byte("{\"result\":\"405 - method not allowed\"}"),
@@ -341,6 +420,11 @@ func (c *TargetsVendor) onStatus(request v1alpha2.COARequest) v1alpha2.COARespon
 	defer span.End()
 	tLog.Infof("V (Targets) : onStatus, method: %s, traceId: %s", request.Method, span.SpanContext().TraceID().String())
 
+	version := request.Parameters["__version"]
+	rootResource := request.Parameters["__name"]
+	id := rootResource + "-" + version
+	tLog.Infof("V (Targets): onCampaigns, id: %s, version: %s", id, version)
+
 	switch request.Method {
 	case fasthttp.MethodPut:
 		namespace, exist := request.Parameters["namespace"]
@@ -369,7 +453,7 @@ func (c *TargetsVendor) onStatus(request v1alpha2.COARequest) v1alpha2.COARespon
 
 		state, err := c.TargetsManager.ReportState(pCtx, model.TargetState{
 			ObjectMeta: model.ObjectMeta{
-				Name:      request.Parameters["__name"],
+				Name:      id,
 				Namespace: namespace,
 			},
 			Status: model.TargetStatus{
@@ -411,13 +495,18 @@ func (c *TargetsVendor) onDownload(request v1alpha2.COARequest) v1alpha2.COAResp
 	defer span.End()
 	tLog.Infof("V (Targets) : onDownload, method: %s, traceId: %s", request.Method, span.SpanContext().TraceID().String())
 
+	version := request.Parameters["__version"]
+	rootResource := request.Parameters["__name"]
+	id := rootResource + "-" + version
+	tLog.Infof("V (Targets): onDownload, id: %s, version: %s", id, version)
+
 	switch request.Method {
 	case fasthttp.MethodGet:
 		namespace, exist := request.Parameters["namespace"]
 		if !exist {
 			namespace = constants.DefaultScope
 		}
-		state, err := c.TargetsManager.GetState(pCtx, request.Parameters["__name"], namespace)
+		state, err := c.TargetsManager.GetState(pCtx, id, namespace)
 		if err != nil {
 			return observ_utils.CloseSpanWithCOAResponse(span, v1alpha2.COAResponse{
 				State: v1alpha2.InternalError,
@@ -462,6 +551,10 @@ func (c *TargetsVendor) onHeartBeat(request v1alpha2.COARequest) v1alpha2.COARes
 	defer span.End()
 	tLog.Infof("V (Targets) : onHeartBeat, method: %s, traceId: %s", request.Method, span.SpanContext().TraceID().String())
 
+	version := request.Parameters["__version"]
+	rootResource := request.Parameters["__name"]
+	id := rootResource + "-" + version
+
 	switch request.Method {
 	case fasthttp.MethodPost:
 		namespace, exist := request.Parameters["namespace"]
@@ -470,7 +563,7 @@ func (c *TargetsVendor) onHeartBeat(request v1alpha2.COARequest) v1alpha2.COARes
 		}
 		_, err := c.TargetsManager.ReportState(pCtx, model.TargetState{
 			ObjectMeta: model.ObjectMeta{
-				Name:      request.Parameters["__name"],
+				Name:      id,
 				Namespace: namespace,
 			},
 			Status: model.TargetStatus{

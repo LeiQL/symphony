@@ -346,6 +346,7 @@ func (s *JobsManager) HandleJobEvent(ctx context.Context, event v1alpha2.Event) 
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
+	log.Info(" M (Job): handling %v event, event body %v, %v", event.Metadata["objectType"], "job", event.Body)
 
 	namespace := model.ReadProperty(event.Metadata, "namespace", nil)
 	if namespace == "" {
@@ -367,7 +368,6 @@ func (s *JobsManager) HandleJobEvent(ctx context.Context, event v1alpha2.Event) 
 
 		switch objectType {
 		case "instance":
-			log.Debugf(" M (Job): handling instance job %s", job.Id)
 			instanceName := job.Id
 			var instance model.InstanceState
 			//get intance
@@ -380,7 +380,9 @@ func (s *JobsManager) HandleJobEvent(ctx context.Context, event v1alpha2.Event) 
 			//get solution
 			var solution model.SolutionState
 			solution, err = s.apiClient.GetSolution(ctx, instance.Spec.Solution, namespace, s.user, s.password)
+
 			if err != nil {
+				log.Debugf(" M (Job): error getting solution %s, namespace: %s: %s", instance.Spec.Solution, namespace, err.Error())
 				solution = model.SolutionState{
 					ObjectMeta: model.ObjectMeta{
 						Name:      instance.Spec.Solution,
@@ -396,6 +398,7 @@ func (s *JobsManager) HandleJobEvent(ctx context.Context, event v1alpha2.Event) 
 			var targets []model.TargetState
 			targets, err = s.apiClient.GetTargets(ctx, namespace, s.user, s.password)
 			if err != nil {
+				log.Debugf(" M (Job): error getting targets, namespace: %s: %s", namespace, err.Error())
 				targets = make([]model.TargetState, 0)
 			}
 
@@ -461,7 +464,7 @@ func (s *JobsManager) HandleJobEvent(ctx context.Context, event v1alpha2.Event) 
 					// TODO: how to handle status updates?
 					s.StateProvider.Upsert(ctx, states.UpsertRequest{
 						Value: states.StateEntry{
-							ID: "t_" + targetName,
+							ID: "t_" + target.ObjectMeta.Name,
 							Body: LastSuccessTime{
 								Time: time.Now().UTC(),
 							},

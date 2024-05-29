@@ -10,6 +10,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/model"
 	"github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/providers/graph"
@@ -58,6 +60,7 @@ func (s *CatalogsManager) GetState(ctx context.Context, name string, namespace s
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
+	log.Infof(" M (Catalogs): GetState, name: %s, namespace: %s, traceId: %s", name, namespace, span.SpanContext().TraceID().String())
 
 	getRequest := states.GetRequest{
 		ID: name,
@@ -76,6 +79,36 @@ func (s *CatalogsManager) GetState(ctx context.Context, name string, namespace s
 	}
 	var ret model.CatalogState
 	ret, err = getCatalogState(entry.Body, entry.ETag)
+	if err != nil {
+		return model.CatalogState{}, err
+	}
+	return ret, nil
+}
+
+func (t *CatalogsManager) GetLatestState(ctx context.Context, id string, namespace string) (model.CatalogState, error) {
+	ctx, span := observability.StartSpan("Catalogs Manager", ctx, &map[string]string{
+		"method": "GetLatest",
+	})
+	var err error = nil
+	defer observ_utils.CloseSpanWithError(span, &err)
+	log.Infof("  M (Catalogs): GetLatestState, id: %v, namespace: %v, traceId: %s", id, namespace, span.SpanContext().TraceID().String())
+
+	getRequest := states.GetRequest{
+		ID: id,
+		Metadata: map[string]interface{}{
+			"version":   "v1",
+			"group":     model.FederationGroup,
+			"resource":  "catalogs",
+			"namespace": namespace,
+			"kind":      "Catalog",
+		},
+	}
+	entry, err := t.StateProvider.GetLatest(ctx, getRequest)
+	if err != nil {
+		return model.CatalogState{}, err
+	}
+
+	ret, err := getCatalogState(entry.Body, entry.ETag)
 	if err != nil {
 		return model.CatalogState{}, err
 	}
@@ -136,6 +169,7 @@ func (m *CatalogsManager) UpsertState(ctx context.Context, name string, state mo
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
+	log.Infof(" M (Catalogs): UpsertState, name %s, traceId: %s", name, span.SpanContext().TraceID().String())
 
 	if state.ObjectMeta.Name != "" && state.ObjectMeta.Name != name {
 		return v1alpha2.NewCOAError(nil, fmt.Sprintf("Name in metadata (%s) does not match name in request (%s)", state.ObjectMeta.Name, name), v1alpha2.BadRequest)
@@ -152,6 +186,32 @@ func (m *CatalogsManager) UpsertState(ctx context.Context, name string, state mo
 		return err
 	}
 
+	var rootResource string
+	var version string
+	var refreshLabels bool
+	if state.Spec.Version != "" {
+		version = state.Spec.Version
+	}
+	if state.Spec.RootResource == "" && version != "" {
+		suffix := "-" + version
+		rootResource = strings.TrimSuffix(name, suffix)
+	} else {
+		rootResource = state.Spec.RootResource
+	}
+
+	if state.ObjectMeta.Labels == nil {
+		state.ObjectMeta.Labels = make(map[string]string)
+	}
+
+	_, versionLabelExists := state.ObjectMeta.Labels["version"]
+	_, rootLabelExists := state.ObjectMeta.Labels["rootResource"]
+	if (!versionLabelExists || !rootLabelExists) && version != "" && rootResource != "" {
+		state.ObjectMeta.Labels["rootResource"] = rootResource
+		state.ObjectMeta.Labels["version"] = version
+		refreshLabels = true
+	}
+	log.Infof("  M (Catalogs): UpsertState, version %v, rootResource: %v, versionLabelExists: %v, rootLabelExists: %v", version, rootResource, versionLabelExists, rootLabelExists)
+
 	upsertRequest := states.UpsertRequest{
 		Value: states.StateEntry{
 			ID: name,
@@ -163,13 +223,16 @@ func (m *CatalogsManager) UpsertState(ctx context.Context, name string, state mo
 			},
 		},
 		Metadata: map[string]interface{}{
-			"namespace": state.ObjectMeta.Namespace,
-			"group":     model.FederationGroup,
-			"version":   "v1",
-			"resource":  "catalogs",
-			"kind":      "Catalog",
+			"namespace":     state.ObjectMeta.Namespace,
+			"group":         model.FederationGroup,
+			"version":       "v1",
+			"resource":      "catalogs",
+			"kind":          "Catalog",
+			"rootResource":  rootResource,
+			"refreshLabels": strconv.FormatBool(refreshLabels),
 		},
 	}
+
 	_, err = m.StateProvider.Upsert(ctx, upsertRequest)
 	if err != nil {
 		return err
@@ -194,15 +257,29 @@ func (m *CatalogsManager) DeleteState(ctx context.Context, name string, namespac
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
 
+	var rootResource string
+	var version string
+	var id string
+	parts := strings.Split(name, ":")
+	if len(parts) == 2 {
+		rootResource = parts[0]
+		version = parts[1]
+		id = rootResource + "-" + version
+	} else {
+		id = name
+	}
+	log.Infof("  M (Catalogs): DeleteState, id: %v, namespace: %v, rootResource: %v, version: %v, traceId: %s", id, namespace, rootResource, version, span.SpanContext().TraceID().String())
+
 	//TODO: publish DELETE event
 	err = m.StateProvider.Delete(ctx, states.DeleteRequest{
-		ID: name,
+		ID: id,
 		Metadata: map[string]interface{}{
-			"namespace": namespace,
-			"group":     model.FederationGroup,
-			"version":   "v1",
-			"resource":  "catalogs",
-			"kind":      "Catalog",
+			"namespace":    namespace,
+			"group":        model.FederationGroup,
+			"version":      "v1",
+			"resource":     "catalogs",
+			"kind":         "Catalog",
+			"rootResource": rootResource,
 		},
 	})
 	return err
@@ -214,6 +291,7 @@ func (t *CatalogsManager) ListState(ctx context.Context, namespace string, filte
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
+	log.Infof("  M (Catalogs): ListState, namespace: %v, traceId: %s", namespace, span.SpanContext().TraceID().String())
 
 	listRequest := states.ListRequest{
 		Metadata: map[string]interface{}{
@@ -265,8 +343,8 @@ func (g *CatalogsManager) GetChains(ctx context.Context, filter string, namespac
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
+	log.Infof("  M (Catalogs): GetChains, filter: %v, namespace: %v, traceId: %s", filter, namespace, span.SpanContext().TraceID().String())
 
-	log.Debug(" M (Graph): GetChains")
 	err = g.setProviderDataIfNecessary(ctx, namespace)
 	if err != nil {
 		return nil, err
@@ -288,8 +366,8 @@ func (g *CatalogsManager) GetTrees(ctx context.Context, filter string, namespace
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
+	log.Infof("  M (Catalogs): GetTrees, filter: %v, namespace: %v, traceId: %s", filter, namespace, span.SpanContext().TraceID().String())
 
-	log.Debug(" M (Graph): GetTrees")
 	err = g.setProviderDataIfNecessary(ctx, namespace)
 	if err != nil {
 		return nil, err

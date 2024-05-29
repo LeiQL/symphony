@@ -105,7 +105,7 @@ func (i *MaterializeStageProvider) Process(ctx context.Context, mgrContext conte
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
-	mLog.Info("  P (Materialize Processor): processing inputs")
+	mLog.Infof("  P (Materialize Processor): processing inputs, traceId: %s", span.SpanContext().TraceID().String())
 	outputs := make(map[string]interface{})
 
 	objects, ok := inputs["names"].([]interface{})
@@ -132,7 +132,6 @@ func (i *MaterializeStageProvider) Process(ctx context.Context, mgrContext conte
 	}
 
 	mLog.Debugf("  P (Materialize Processor): masterialize %v in namespace %s", prefixedNames, namespace)
-
 	var catalogs []model.CatalogState
 	catalogs, err = i.ApiClient.GetCatalogs(ctx, namespace, i.Config.User, i.Config.Password)
 
@@ -142,7 +141,11 @@ func (i *MaterializeStageProvider) Process(ctx context.Context, mgrContext conte
 	creationCount := 0
 	for _, catalog := range catalogs {
 		for _, object := range prefixedNames {
-			if catalog.ObjectMeta.Name == object {
+			objectName := object
+			if strings.Contains(objectName, ":") {
+				objectName = strings.ReplaceAll(objectName, ":", "-")
+			}
+			if catalog.ObjectMeta.Name == objectName {
 				objectData, _ := json.Marshal(catalog.Spec.Properties) //TODO: handle errors
 				name := catalog.ObjectMeta.Name
 				if s, ok := inputs["__origin"]; ok {
@@ -156,14 +159,30 @@ func (i *MaterializeStageProvider) Process(ctx context.Context, mgrContext conte
 						mLog.Errorf("Failed to unmarshal instance state for catalog %s: %s", name, err.Error())
 						return outputs, false, err
 					}
-					// If inner instace defines a display name, use it as the name
-					if instanceState.Spec.DisplayName != "" {
-						instanceState.ObjectMeta.Name = instanceState.Spec.DisplayName
+
+					if instanceState.ObjectMeta.Name == "" {
+						mLog.Errorf("Instance name is empty: catalog - %s", name)
+						return outputs, false, v1alpha2.NewCOAError(nil, fmt.Sprintf("Empty instance name: catalog - %s", name), v1alpha2.BadRequest)
 					}
+
+					instanceName := instanceState.ObjectMeta.Name
+					var rootResource string
+					var version string
+					parts := strings.Split(instanceName, ":")
+					if len(parts) == 2 {
+						rootResource = parts[0]
+						version = parts[1]
+						instanceState.Spec.RootResource = rootResource
+						instanceState.Spec.Version = version
+					} else {
+						mLog.Errorf("Instance name is invalid: instance - %s, catalog - %s", instanceName, name)
+						return outputs, false, v1alpha2.NewCOAError(nil, fmt.Sprintf("Instance name is invalid: catalog - %s", name), v1alpha2.BadRequest)
+					}
+
 					instanceState.ObjectMeta = updateObjectMeta(instanceState.ObjectMeta, inputs, name)
 					objectData, _ := json.Marshal(instanceState)
 					mLog.Debugf("  P (Materialize Processor): materialize instance %v to namespace %s", instanceState.ObjectMeta.Name, instanceState.ObjectMeta.Namespace)
-					err = i.ApiClient.CreateInstance(ctx, instanceState.ObjectMeta.Name, objectData, instanceState.ObjectMeta.Namespace, i.Config.User, i.Config.Password)
+					err = i.ApiClient.CreateInstance(ctx, instanceName, objectData, instanceState.ObjectMeta.Namespace, i.Config.User, i.Config.Password)
 					if err != nil {
 						mLog.Errorf("Failed to create instance %s: %s", name, err.Error())
 						return outputs, false, err
@@ -176,14 +195,30 @@ func (i *MaterializeStageProvider) Process(ctx context.Context, mgrContext conte
 						mLog.Errorf("Failed to unmarshal solution state for catalog %s: %s: %s", name, err.Error())
 						return outputs, false, err
 					}
-					// If inner solution defines a display name, use it as the name
-					if solutionState.Spec.DisplayName != "" {
-						solutionState.ObjectMeta.Name = solutionState.Spec.DisplayName
+
+					if solutionState.ObjectMeta.Name == "" {
+						mLog.Errorf("Solution name is empty: catalog - %s", name)
+						return outputs, false, v1alpha2.NewCOAError(nil, fmt.Sprintf("Empty solution name: catalog - %s", name), v1alpha2.BadRequest)
 					}
+
+					solutionName := solutionState.ObjectMeta.Name
+					var rootResource string
+					var version string
+					parts := strings.Split(solutionName, ":")
+					if len(parts) == 2 {
+						rootResource = parts[0]
+						version = parts[1]
+						solutionState.Spec.RootResource = rootResource
+						solutionState.Spec.Version = version
+					} else {
+						mLog.Errorf("Solution name is invalid: solution - %s, catalog - %s", solutionName, name)
+						return outputs, false, v1alpha2.NewCOAError(nil, fmt.Sprintf("Invalid solution name: catalog - %s", name), v1alpha2.BadRequest)
+					}
+
 					solutionState.ObjectMeta = updateObjectMeta(solutionState.ObjectMeta, inputs, name)
 					objectData, _ := json.Marshal(solutionState)
 					mLog.Debugf("  P (Materialize Processor): materialize solution %v to namespace %s", solutionState.ObjectMeta.Name, solutionState.ObjectMeta.Namespace)
-					err = i.ApiClient.UpsertSolution(ctx, solutionState.ObjectMeta.Name, objectData, solutionState.ObjectMeta.Namespace, i.Config.User, i.Config.Password)
+					err = i.ApiClient.UpsertSolution(ctx, solutionName, objectData, solutionState.ObjectMeta.Namespace, i.Config.User, i.Config.Password)
 					if err != nil {
 						mLog.Errorf("Failed to create solution %s: %s", name, err.Error())
 						return outputs, false, err
@@ -196,14 +231,30 @@ func (i *MaterializeStageProvider) Process(ctx context.Context, mgrContext conte
 						mLog.Errorf("Failed to unmarshal target state for catalog %s: %s", name, err.Error())
 						return outputs, false, err
 					}
-					// If inner target defines a display name, use it as the name
-					if targetState.Spec.DisplayName != "" {
-						targetState.ObjectMeta.Name = targetState.Spec.DisplayName
+
+					if targetState.ObjectMeta.Name == "" {
+						mLog.Errorf("Target name is empty: catalog - %s", name)
+						return outputs, false, v1alpha2.NewCOAError(nil, fmt.Sprintf("Empty target name: catalog - %s", name), v1alpha2.BadRequest)
 					}
+
+					targetName := targetState.ObjectMeta.Name
+					var rootResource string
+					var version string
+					parts := strings.Split(targetName, ":")
+					if len(parts) == 2 {
+						rootResource = parts[0]
+						version = parts[1]
+						targetState.Spec.RootResource = rootResource
+						targetState.Spec.Version = version
+					} else {
+						mLog.Errorf("Target name is invalid: target - %s, catalog - %s", targetName, name)
+						return outputs, false, v1alpha2.NewCOAError(nil, fmt.Sprintf("Invalid target name: %s", name), v1alpha2.BadRequest)
+					}
+
 					targetState.ObjectMeta = updateObjectMeta(targetState.ObjectMeta, inputs, name)
 					objectData, _ := json.Marshal(targetState)
 					mLog.Debugf("  P (Materialize Processor): materialize target %v to namespace %s", targetState.ObjectMeta.Name, targetState.ObjectMeta.Namespace)
-					err = i.ApiClient.CreateTarget(ctx, targetState.ObjectMeta.Name, objectData, targetState.ObjectMeta.Namespace, i.Config.User, i.Config.Password)
+					err = i.ApiClient.CreateTarget(ctx, targetName, objectData, targetState.ObjectMeta.Namespace, i.Config.User, i.Config.Password)
 					if err != nil {
 						mLog.Errorf("Failed to create target %s: %s", name, err.Error())
 						return outputs, false, err
@@ -217,10 +268,30 @@ func (i *MaterializeStageProvider) Process(ctx context.Context, mgrContext conte
 						mLog.Errorf("Failed to unmarshal catalog state for catalog %s: %s", name, err.Error())
 						return outputs, false, err
 					}
+
+					if catalogState.ObjectMeta.Name == "" {
+						mLog.Errorf("Catalog name is empty %s", name)
+						return outputs, false, v1alpha2.NewCOAError(nil, fmt.Sprintf("Empty catalog name: %s", name), v1alpha2.BadRequest)
+					}
+
+					catalogName := catalogState.ObjectMeta.Name
+					var rootResource string
+					var version string
+					parts := strings.Split(catalogName, ":")
+					if len(parts) == 2 {
+						rootResource = parts[0]
+						version = parts[1]
+						catalogState.Spec.RootResource = rootResource
+						catalogState.Spec.Version = version
+					} else {
+						mLog.Errorf("Catalog name is invalid: catalog - %s, parent catalog - %s", catalogName, name)
+						return outputs, false, v1alpha2.NewCOAError(nil, fmt.Sprintf("Invalid catalog name: catalog - %s", name), v1alpha2.BadRequest)
+					}
+
 					catalogState.ObjectMeta = updateObjectMeta(catalogState.ObjectMeta, inputs, name)
 					objectData, _ := json.Marshal(catalogState)
 					mLog.Debugf("  P (Materialize Processor): materialize catalog %v to namespace %s", catalogState.ObjectMeta.Name, catalogState.ObjectMeta.Namespace)
-					err = i.ApiClient.UpsertCatalog(ctx, catalogState.ObjectMeta.Name, objectData, i.Config.User, i.Config.Password)
+					err = i.ApiClient.UpsertCatalog(ctx, catalogName, objectData, i.Config.User, i.Config.Password)
 					if err != nil {
 						mLog.Errorf("Failed to create catalog %s: %s", catalogState.ObjectMeta.Name, err.Error())
 						return outputs, false, err
@@ -238,9 +309,8 @@ func (i *MaterializeStageProvider) Process(ctx context.Context, mgrContext conte
 }
 
 func updateObjectMeta(objectMeta model.ObjectMeta, inputs map[string]interface{}, catalogName string) model.ObjectMeta {
-	if objectMeta.Name == "" {
-		// use the same name as catalog wrapping it if not provided
-		objectMeta.Name = catalogName
+	if strings.Contains(objectMeta.Name, ":") {
+		objectMeta.Name = strings.ReplaceAll(objectMeta.Name, ":", "-")
 	}
 	// stage inputs override objectMeta namespace
 	if s := stage.GetNamespace(inputs); s != "" {

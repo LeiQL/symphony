@@ -8,6 +8,7 @@ package solution
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -98,13 +99,49 @@ func (r *InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	deploymentOperationType := metrics.DeploymentQueued
 	var err error
 
+	version := instance.Spec.Version
+	name := instance.Spec.RootResource
+	instanceName := name + ":" + version
+	jData, _ := json.Marshal(instance)
+
 	if instance.ObjectMeta.DeletionTimestamp.IsZero() { // update
+		_, exists := instance.Labels["version"]
+		log.Info(fmt.Sprintf("Instance update: version tag exists - %v", exists))
+		if !exists && version != "" && name != "" {
+			err := r.ApiClient.CreateInstance(ctx, instanceName, jData, req.Namespace, "", "")
+			if err != nil {
+				log.Error(err, "upsert instance failed")
+				return ctrl.Result{}, err
+			}
+
+			if err := r.Get(ctx, req.NamespacedName, instance); err != nil {
+				log.Error(err, "unable to fetch instance object after instance update")
+				return ctrl.Result{}, client.IgnoreNotFound(err)
+			}
+		}
+
 		reconciliationType = metrics.UpdateOperationType
 		deploymentOperationType, reconcileResult, err = r.dr.AttemptUpdate(ctx, instance, log, instanceOperationStartTimeKey)
 		if err != nil {
 			resultType = metrics.ReconcileFailedResult
 		}
 	} else { // remove
+		value, exists := instance.Labels["tag"]
+		log.Info(fmt.Sprintf("Instance remove: latest tag - %v, %v", value, exists))
+
+		if exists && value == "latest" {
+			err := r.ApiClient.DeleteInstance(ctx, instanceName, req.Namespace, "", "")
+			if err != nil {
+				log.Error(err, "failed to delete instance latest tag")
+				return ctrl.Result{}, err
+			}
+
+			if err := r.Get(ctx, req.NamespacedName, instance); err != nil {
+				log.Error(err, "unable to fetch Instance object after instance tag removal")
+				return ctrl.Result{}, client.IgnoreNotFound(err)
+			}
+		}
+
 		deploymentOperationType, reconcileResult, err = r.dr.AttemptRemove(ctx, instance, log, instanceOperationStartTimeKey)
 		if err != nil {
 			resultType = metrics.ReconcileFailedResult
@@ -138,9 +175,17 @@ func (r *InstanceReconciler) deploymentBuilder(ctx context.Context, object recon
 		TargetCandidates: []fabric_v1.Target{},
 	}
 
-	if err := r.Get(ctx, types.NamespacedName{Name: instance.Spec.Solution, Namespace: instance.Namespace}, &deploymentResources.Solution); err != nil {
+	// Get solution
+	solution, err := r.ApiClient.GetSolution(ctx, instance.Spec.Solution, instance.Namespace, "", "")
+	if err != nil {
+		log.Error(v1alpha2.NewCOAError(err, "failed to get solution from API", v1alpha2.SolutionGetFailed), "proceed with no solution found")
+	}
+
+	log.Info(fmt.Sprintf("Building deployment: get solution object - %v", solution.ObjectMeta.Name))
+	if err := r.Get(ctx, types.NamespacedName{Name: solution.ObjectMeta.Name, Namespace: instance.Namespace}, &deploymentResources.Solution); err != nil {
 		log.Error(v1alpha2.NewCOAError(err, "failed to get solution", v1alpha2.SolutionGetFailed), "proceed with no solution found")
 	}
+
 	// Get targets
 	if err := r.List(ctx, &deploymentResources.TargetList, client.InNamespace(instance.Namespace)); err != nil {
 		log.Error(v1alpha2.NewCOAError(err, "failed to list targets", v1alpha2.TargetListGetFailed), "proceed with no targets found")
@@ -152,7 +197,8 @@ func (r *InstanceReconciler) deploymentBuilder(ctx context.Context, object recon
 		log.Error(v1alpha2.NewCOAError(nil, "no target candidates found", v1alpha2.TargetCandidatesNotFound), "proceed with no target candidates found")
 	}
 
-	deployment, err := utils.CreateSymphonyDeployment(ctx, *instance, deploymentResources.Solution, deploymentResources.TargetCandidates, object.GetNamespace())
+	deployment, err = utils.CreateSymphonyDeployment(ctx, *instance, deploymentResources.Solution, deploymentResources.TargetCandidates, object.GetNamespace())
+
 	if err != nil {
 		return nil, err
 	}
@@ -212,6 +258,10 @@ func (r *InstanceReconciler) handleTarget(obj client.Object) []ctrl.Request {
 
 	updatedInstanceNames := make([]string, 0)
 	for _, instance := range instances.Items {
+		if !utils.NeedWatchInstance(instance) {
+			continue
+		}
+
 		targetCandidates := utils.MatchTargets(instance, targetList)
 		if len(targetCandidates) > 0 {
 			ret = append(ret, ctrl.Request{
@@ -226,6 +276,8 @@ func (r *InstanceReconciler) handleTarget(obj client.Object) []ctrl.Request {
 
 	if len(ret) > 0 {
 		log.Log.Info(fmt.Sprintf("Watched target %s under namespace %s is updated, needs to requeue instances related, count: %d, list: %s", tarObj.Name, tarObj.Namespace, len(ret), strings.Join(updatedInstanceNames, ",")))
+	} else {
+		log.Log.Info(fmt.Sprintf("Watched target %s under namespace %s is updated, no instance needs to requeue", tarObj.Name, tarObj.Namespace))
 	}
 
 	return ret
@@ -235,9 +287,15 @@ func (r *InstanceReconciler) handleSolution(obj client.Object) []ctrl.Request {
 	ret := make([]ctrl.Request, 0)
 	solObj := obj.(*solution_v1.Solution)
 	var instances solution_v1.InstanceList
+
+	labels := solObj.ObjectMeta.Labels
+	resourceName := solObj.Spec.RootResource
+	version := solObj.Spec.Version
+	solutionName := resourceName + ":" + version
+
 	options := []client.ListOption{
 		client.InNamespace(solObj.Namespace),
-		client.MatchingFields{"spec.solution": solObj.Name},
+		client.MatchingFields{"spec.solution": solutionName},
 	}
 	error := r.List(context.Background(), &instances, options...)
 	if error != nil {
@@ -245,8 +303,29 @@ func (r *InstanceReconciler) handleSolution(obj client.Object) []ctrl.Request {
 		return ret
 	}
 
+	if labels["tag"] == "latest" {
+		var instancesWithLatest solution_v1.InstanceList
+		solutionName = resourceName + ":" + "latest"
+		options := []client.ListOption{
+			client.InNamespace(solObj.Namespace),
+			client.MatchingFields{"spec.solution": solutionName},
+		}
+
+		error := r.List(context.Background(), &instancesWithLatest, options...)
+		if error != nil {
+			log.Log.Error(error, "Failed to list instances")
+			return ret
+		}
+
+		instances.Items = append(instances.Items, instancesWithLatest.Items...)
+	}
+
 	updatedInstanceNames := make([]string, 0)
 	for _, instance := range instances.Items {
+		if !utils.NeedWatchInstance(instance) {
+			continue
+		}
+
 		ret = append(ret, ctrl.Request{
 			NamespacedName: types.NamespacedName{
 				Name:      instance.Name,
@@ -258,6 +337,8 @@ func (r *InstanceReconciler) handleSolution(obj client.Object) []ctrl.Request {
 
 	if len(ret) > 0 {
 		log.Log.Info(fmt.Sprintf("Watched solution %s under namespace %s is updated, needs to requeue instances related, count: %d, list: %s", solObj.Name, solObj.Namespace, len(ret), strings.Join(updatedInstanceNames, ",")))
+	} else {
+		log.Log.Info(fmt.Sprintf("Watched solution %s under namespace %s is updated, no instance needs to requeue", solObj.Name, solObj.Namespace))
 	}
 
 	return ret

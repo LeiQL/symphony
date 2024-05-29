@@ -10,6 +10,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/eclipse-symphony/symphony/api/pkg/apis/v1alpha1/model"
 	"github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2"
@@ -17,10 +19,13 @@ import (
 	"github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2/managers"
 	"github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2/providers"
 	"github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2/providers/states"
+	"github.com/eclipse-symphony/symphony/coa/pkg/logger"
 
 	observability "github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2/observability"
 	observ_utils "github.com/eclipse-symphony/symphony/coa/pkg/apis/v1alpha2/observability/utils"
 )
+
+var sLog = logger.NewLogger("coa.runtime")
 
 type SolutionsManager struct {
 	managers.Manager
@@ -48,14 +53,28 @@ func (t *SolutionsManager) DeleteState(ctx context.Context, name string, namespa
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
 
+	var rootResource string
+	var version string
+	var id string
+	parts := strings.Split(name, ":")
+	if len(parts) == 2 {
+		rootResource = parts[0]
+		version = parts[1]
+		id = rootResource + "-" + version
+	} else {
+		id = name
+	}
+	sLog.Infof("  M (Solutions): DeleteState, id: %v, namespace: %v, rootResource: %v, version: %v, traceId: %s", id, namespace, version, span.SpanContext().TraceID().String())
+
 	err = t.StateProvider.Delete(ctx, states.DeleteRequest{
-		ID: name,
+		ID: id,
 		Metadata: map[string]interface{}{
-			"namespace": namespace,
-			"group":     model.SolutionGroup,
-			"version":   "v1",
-			"resource":  "solutions",
-			"kind":      "Solution",
+			"namespace":    namespace,
+			"group":        model.SolutionGroup,
+			"version":      "v1",
+			"resource":     "solutions",
+			"kind":         "Solution",
+			"rootResource": rootResource,
 		},
 	})
 	return err
@@ -67,11 +86,38 @@ func (t *SolutionsManager) UpsertState(ctx context.Context, name string, state m
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
+	sLog.Infof(" M (Solutions): UpsertState, name %s, traceId: %s", name, span.SpanContext().TraceID().String())
 
 	if state.ObjectMeta.Name != "" && state.ObjectMeta.Name != name {
 		return v1alpha2.NewCOAError(nil, fmt.Sprintf("Name in metadata (%s) does not match name in request (%s)", state.ObjectMeta.Name, name), v1alpha2.BadRequest)
 	}
 	state.ObjectMeta.FixNames(name)
+
+	var rootResource string
+	var version string
+	var refreshLabels bool
+	if state.Spec.Version != "" {
+		version = state.Spec.Version
+	}
+	if state.Spec.RootResource == "" && version != "" {
+		suffix := "-" + version
+		rootResource = strings.TrimSuffix(name, suffix)
+	} else {
+		rootResource = state.Spec.RootResource
+	}
+
+	if state.ObjectMeta.Labels == nil {
+		state.ObjectMeta.Labels = make(map[string]string)
+	}
+
+	_, versionLabelExists := state.ObjectMeta.Labels["version"]
+	_, rootLabelExists := state.ObjectMeta.Labels["rootResource"]
+	if !versionLabelExists || !rootLabelExists {
+		state.ObjectMeta.Labels["rootResource"] = rootResource
+		state.ObjectMeta.Labels["version"] = version
+		refreshLabels = true
+	}
+	sLog.Infof("  M (Solutions): UpsertState, version %v, rootResource: %v, versionLabelExists: %v, rootLabelExists: %v", version, rootResource, versionLabelExists, rootLabelExists)
 
 	body := map[string]interface{}{
 		"apiVersion": model.SolutionGroup + "/v1",
@@ -79,17 +125,20 @@ func (t *SolutionsManager) UpsertState(ctx context.Context, name string, state m
 		"metadata":   state.ObjectMeta,
 		"spec":       state.Spec,
 	}
+
 	upsertRequest := states.UpsertRequest{
 		Value: states.StateEntry{
 			ID:   name,
 			Body: body,
 		},
 		Metadata: map[string]interface{}{
-			"namespace": state.ObjectMeta.Namespace,
-			"group":     model.SolutionGroup,
-			"version":   "v1",
-			"resource":  "solutions",
-			"kind":      "Solution",
+			"namespace":     state.ObjectMeta.Namespace,
+			"group":         model.SolutionGroup,
+			"version":       "v1",
+			"resource":      "solutions",
+			"kind":          "Solution",
+			"rootResource":  rootResource,
+			"refreshLabels": strconv.FormatBool(refreshLabels),
 		},
 	}
 
@@ -103,6 +152,7 @@ func (t *SolutionsManager) ListState(ctx context.Context, namespace string) ([]m
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
+	sLog.Infof("  M (Solutions): ListState, namespace %s, traceId: %s", namespace, span.SpanContext().TraceID().String())
 
 	listRequest := states.ListRequest{
 		Metadata: map[string]interface{}{
@@ -149,6 +199,7 @@ func (t *SolutionsManager) GetState(ctx context.Context, id string, namespace st
 	})
 	var err error = nil
 	defer observ_utils.CloseSpanWithError(span, &err)
+	sLog.Infof("  M (Solutions): GetState, id: %s, namespace: %s, traceId: %s", id, namespace, span.SpanContext().TraceID().String())
 
 	getRequest := states.GetRequest{
 		ID: id,
@@ -167,6 +218,36 @@ func (t *SolutionsManager) GetState(ctx context.Context, id string, namespace st
 	}
 	var ret model.SolutionState
 	ret, err = getSolutionState(target.Body)
+	if err != nil {
+		return model.SolutionState{}, err
+	}
+	return ret, nil
+}
+
+func (t *SolutionsManager) GetLatestState(ctx context.Context, id string, namespace string) (model.SolutionState, error) {
+	ctx, span := observability.StartSpan("Solutions Manager", ctx, &map[string]string{
+		"method": "GetLatest",
+	})
+	var err error = nil
+	defer observ_utils.CloseSpanWithError(span, &err)
+	sLog.Infof("  M (Solutions): GetLatestState, id: %s, namespace: %s, traceId: %s", id, namespace, span.SpanContext().TraceID().String())
+
+	getRequest := states.GetRequest{
+		ID: id,
+		Metadata: map[string]interface{}{
+			"version":   "v1",
+			"group":     model.SolutionGroup,
+			"resource":  "solutions",
+			"namespace": namespace,
+			"kind":      "Solution",
+		},
+	}
+	target, err := t.StateProvider.GetLatest(ctx, getRequest)
+	if err != nil {
+		return model.SolutionState{}, err
+	}
+
+	ret, err := getSolutionState(target.Body)
 	if err != nil {
 		return model.SolutionState{}, err
 	}
