@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -224,6 +225,7 @@ func GetCatalogsWithFilter(context context.Context, baseUrl string, user string,
 	if err != nil {
 		return ret, err
 	}
+
 	path := "catalogs/registry"
 	if filterType != "" && filterValue != "" {
 		path = path + "?filterType=" + url.QueryEscape(filterType) + "&filterValue=" + url.QueryEscape(filterValue)
@@ -258,7 +260,17 @@ func GetCatalog(context context.Context, baseUrl string, catalog string, user st
 		catalogName = catalogName[1 : len(catalogName)-1]
 	}
 
-	path := "catalogs/registry/" + url.QueryEscape(catalogName)
+	var name string
+	var version string
+	parts := strings.Split(catalog, ":")
+	if len(parts) == 2 {
+		name = parts[0]
+		version = parts[1]
+	} else {
+		return ret, errors.New("invalid catalog name")
+	}
+
+	path := "catalogs/registry/" + url.QueryEscape(name) + "/" + url.QueryEscape(version) + url.QueryEscape(catalogName)
 	if namespace != "" {
 		path = path + "?namespace=" + url.QueryEscape(namespace)
 	}
@@ -281,7 +293,17 @@ func GetCampaign(context context.Context, baseUrl string, campaign string, user 
 		return ret, err
 	}
 
-	path := "campaigns/" + url.QueryEscape(campaign)
+	var name string
+	var version string
+	parts := strings.Split(campaign, ":")
+	if len(parts) == 2 {
+		name = parts[0]
+		version = parts[1]
+	} else {
+		return ret, errors.New("invalid campaign name")
+	}
+
+	path := "campaigns/" + url.QueryEscape(name) + "/" + url.QueryEscape(version) + url.QueryEscape(campaign)
 	if namespace != "" {
 		path = path + "?namespace=" + url.QueryEscape(namespace)
 
@@ -390,7 +412,17 @@ func UpsertCatalog(context context.Context, baseUrl string, catalog string, user
 		return err
 	}
 
-	_, err = callRestAPI(context, baseUrl, "catalogs/registry/"+url.QueryEscape(catalog), "POST", payload, token)
+	var name string
+	var version string
+	parts := strings.Split(catalog, ":")
+	if len(parts) == 2 {
+		name = parts[0]
+		version = parts[1]
+	} else {
+		return errors.New("invalid catalog name")
+	}
+
+	_, err = callRestAPI(context, baseUrl, "catalogs/registry/"+url.QueryEscape(name)+"/"+url.QueryEscape(version)+url.QueryEscape(catalog), "POST", payload, token)
 	if err != nil {
 		return err
 	}
@@ -403,7 +435,17 @@ func CreateInstance(context context.Context, baseUrl string, instance string, us
 		return err
 	}
 
-	path := "instances/" + url.QueryEscape(instance)
+	var name string
+	var version string
+	parts := strings.Split(instance, ":")
+	if len(parts) == 2 {
+		name = parts[0]
+		version = parts[1]
+	} else {
+		return errors.New("invalid instance name")
+	}
+
+	path := "instances/" + url.QueryEscape(name) + "/" + url.QueryEscape(version) + url.QueryEscape(instance)
 	path = path + "?namespace=" + url.QueryEscape(namespace)
 	_, err = callRestAPI(context, baseUrl, path, "POST", payload, token)
 	if err != nil {
@@ -417,8 +459,17 @@ func DeleteCatalog(context context.Context, baseUrl string, catalog string, user
 	if err != nil {
 		return err
 	}
+	var name string
+	var version string
+	parts := strings.Split(catalog, ":")
+	if len(parts) == 2 {
+		name = parts[0]
+		version = parts[1]
+	} else {
+		return errors.New("invalid catalog name")
+	}
 
-	_, err = callRestAPI(context, baseUrl, "catalogs/registry/"+url.QueryEscape(catalog), "DELETE", nil, token)
+	_, err = callRestAPI(context, baseUrl, "catalogs/registry/"+url.QueryEscape(name)+"/"+url.QueryEscape(version)+url.QueryEscape(catalog), "DELETE", nil, token)
 	if err != nil {
 		return err
 	}
@@ -430,7 +481,18 @@ func DeleteInstance(context context.Context, baseUrl string, instance string, us
 	if err != nil {
 		return err
 	}
-	path := "instances/" + url.QueryEscape(instance)
+
+	var name string
+	var version string
+	parts := strings.Split(instance, ":")
+	if len(parts) == 2 {
+		name = parts[0]
+		version = parts[1]
+	} else {
+		return errors.New("invalid instance name")
+	}
+
+	path := "instances/" + url.QueryEscape(name) + "/" + url.QueryEscape(version) + url.QueryEscape(instance)
 	path = path + "?direct=true&namespace=" + url.QueryEscape(namespace)
 	_, err = callRestAPI(context, baseUrl, path, "DELETE", nil, token)
 	if err != nil {
@@ -444,7 +506,18 @@ func DeleteTarget(context context.Context, baseUrl string, target string, user s
 	if err != nil {
 		return err
 	}
-	path := "targets/registry/" + url.QueryEscape(target)
+
+	var name string
+	var version string
+	parts := strings.Split(target, ":")
+	if len(parts) == 2 {
+		name = parts[0]
+		version = parts[1]
+	} else {
+		return errors.New("invalid target name")
+	}
+
+	path := "targets/registry/" + url.QueryEscape(name) + "/" + url.QueryEscape(version) + url.QueryEscape(target)
 	path = path + "?direct=true&namespace=" + url.QueryEscape(namespace)
 	_, err = callRestAPI(context, baseUrl, path, "DELETE", nil, token)
 	if err != nil {
@@ -497,7 +570,18 @@ func GetSolution(context context.Context, baseUrl string, solution string, user 
 	if err != nil {
 		return ret, err
 	}
-	path := "solutions/" + url.QueryEscape(solution)
+
+	var name string
+	var version string
+	parts := strings.Split(solution, ":")
+	if len(parts) == 2 {
+		name = parts[0]
+		version = parts[1]
+	} else {
+		return ret, errors.New("invalid solution name")
+	}
+
+	path := "solutions/" + url.QueryEscape(name) + "/" + url.QueryEscape(version)
 	path = path + "?namespace=" + url.QueryEscape(namespace)
 	response, err := callRestAPI(context, baseUrl, path, "GET", nil, token)
 	if err != nil {
@@ -516,7 +600,23 @@ func UpsertSolution(context context.Context, baseUrl string, solution string, us
 	if err != nil {
 		return err
 	}
-	path := "solutions/" + url.QueryEscape(solution)
+
+	var name string
+	var version string
+
+	log.Infof("Symphony API UpsertSolution, solution: %s namespace: %s", solution, namespace)
+
+	parts := strings.Split(solution, ":")
+	if len(parts) == 2 {
+		name = parts[0]
+		version = parts[1]
+	} else {
+		return errors.New("invalid solution name")
+	}
+
+	log.Infof("Symphony API UpsertSolution, parts: %s, %s", parts[0], parts[1])
+
+	path := "solutions/" + url.QueryEscape(name) + "/" + url.QueryEscape(version)
 	path = path + "?namespace=" + url.QueryEscape(namespace)
 	_, err = callRestAPI(context, baseUrl, path, "POST", payload, token)
 	if err != nil {
@@ -530,7 +630,19 @@ func DeleteSolution(context context.Context, baseUrl string, solution string, us
 	if err != nil {
 		return err
 	}
-	path := "solutions/" + url.QueryEscape(solution)
+
+	var name string
+	var version string
+
+	parts := strings.Split(solution, ":")
+	if len(parts) == 2 {
+		name = parts[0]
+		version = parts[1]
+	} else {
+		return errors.New("invalid solution name")
+	}
+
+	path := "solutions/" + url.QueryEscape(name) + "/" + url.QueryEscape(version)
 	path = path + "?namespace=" + url.QueryEscape(namespace)
 	_, err = callRestAPI(context, baseUrl, path, "DELETE", nil, token)
 	if err != nil {
@@ -642,7 +754,11 @@ func MatchTargets(instance model.InstanceState, targets []model.TargetState) []m
 	ret := make(map[string]model.TargetState)
 	if instance.Spec.Target.Name != "" {
 		for _, t := range targets {
-			if matchString(instance.Spec.Target.Name, t.ObjectMeta.Name) {
+			targetName := instance.Spec.Target.Name
+			if strings.Contains(targetName, ":") {
+				targetName = strings.ReplaceAll(targetName, ":", "-")
+			}
+			if matchString(targetName, t.ObjectMeta.Name) {
 				ret[t.ObjectMeta.Name] = t
 			}
 		}

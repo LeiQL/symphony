@@ -181,15 +181,17 @@ func main() {
 	}
 
 	if err = (&solutioncontrollers.SolutionReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:    mgr.GetClient(),
+		Scheme:    mgr.GetScheme(),
+		ApiClient: apiClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Solution")
 		os.Exit(1)
 	}
 	if err = (&workflowcontrollers.CampaignReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:    mgr.GetClient(),
+		Scheme:    mgr.GetScheme(),
+		ApiClient: apiClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Campaign")
 		os.Exit(1)
