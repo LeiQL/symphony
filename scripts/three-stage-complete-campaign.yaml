@@ -1,0 +1,52 @@
+apiVersion: workflow.symphony/v1
+kind: Campaign
+metadata:
+  name: three-stage-complete-campaign
+  namespace: default
+spec:
+  firstStage: "add-topologies"
+  stages:
+    add-topologies:
+      name: "add-topologies"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "external_distribution"
+        scriptEngine: "bash"
+        script: "add-target-bindings.sh"
+      inputs:
+        namespace: "default"
+        targets: "target04"
+        verbose: "true"
+      stageSelector: "add-components"
+      
+    add-components:
+      name: "add-components"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "external_distribution"
+        scriptEngine: "bash"
+        script: "add-target-bindings.sh"
+      inputs:
+        namespace: "default"
+        targets: "target04"
+        add_components: "true"
+        verbose: "true"
+        image_list: "demo-image-05:latest"
+        image_ref_key: "demo-image-05:latest"
+        image_ref_value: "lcc2-solution2-1.0.0.1"
+      stageSelector: "verify-deployment"
+      
+    verify-deployment:
+      name: "verify-deployment"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "external_distribution"
+        scriptEngine: "bash"
+        script: "check-target-status.sh"
+      inputs:
+        namespace: "default"
+        targets: "target04"
+        verbose: "true"
+        timeout: "300"
+        interval: "10"
+      stageSelector: ""

@@ -1,0 +1,124 @@
+2025-07-15 14:17:06 [INFO] Starting add-target-bindings.sh v2.0.0
+2025-07-15 14:17:06 [DEBUG] Arguments parsed: namespace=default, targets=target07,target08, dry-run=false
+2025-07-15 14:17:06 [DEBUG] Python3 is already installed
+2025-07-15 14:17:06 [INFO] Processing 2 target(s) in namespace default
+2025-07-15 14:17:07 [DEBUG] About to process target: target07
+2025-07-15 14:17:07 [INFO] Processing target: target07
+2025-07-15 14:17:10 [DEBUG] Backing up target target07 to /d/OneProject/symphony/scripts/backups/target07_20250715_141709.yaml
+2025-07-15 14:17:11 [INFO] Backup created: /d/OneProject/symphony/scripts/backups/target07_20250715_141709.yaml
+2025-07-15 14:17:11 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to target07
+2025-07-15 14:17:11 [DEBUG] Generated topology JSON: {
+  "device": "staging-topology",
+  "bindings": [
+    {
+      "role": "connected-registry-monitor",
+      "provider": "providers.target.script",
+      "config": {
+        "applyScript": "get-connected-registry.sh",
+        "removeScript": "mock-remove.sh",
+        "getScript": "target-get.sh",
+        "scriptFolder": "external_distribution/staging"
+      }
+    },
+    {
+      "role": "staging-status-monitor",
+      "provider": "providers.target.script",
+      "config": {
+        "applyScript": "get-staging-status.sh",
+        "removeScript": "mock-remove.sh",
+        "getScript": "target-get.sh",
+        "scriptFolder": "external_distribution/staging"
+      }
+    }
+  ]
+}
+2025-07-15 14:17:11 [INFO] Patching target target07 with new topology
+2025-07-15 14:17:13 [INFO] Successfully updated target target07 with topology
+2025-07-15 14:17:13 [DEBUG] About to check ADD_COMPONENTS flag: false
+2025-07-15 14:17:13 [DEBUG] ADD_COMPONENTS is false, skipping components
+2025-07-15 14:17:13 [DEBUG] Finished topology processing for target07
+2025-07-15 14:17:13 [DEBUG] Completed processing target: target07
+2025-07-15 14:17:13 [DEBUG] About to return from add_bindings_to_target function
+2025-07-15 14:19:59 [INFO] Starting add-target-bindings.sh v2.0.0
+2025-07-15 14:19:59 [DEBUG] Arguments parsed: namespace=default, targets=target07,target08, dry-run=false
+2025-07-15 14:19:59 [DEBUG] Python3 is already installed
+2025-07-15 14:19:59 [INFO] Processing 2 target(s) in namespace default
+2025-07-15 14:19:59 [DEBUG] About to process target: target07
+2025-07-15 14:19:59 [INFO] Processing target: target07
+2025-07-15 14:20:02 [DEBUG] Backing up target target07 to /d/OneProject/symphony/scripts/backups/target07_20250715_142002.yaml
+2025-07-15 14:20:03 [INFO] Backup created: /d/OneProject/symphony/scripts/backups/target07_20250715_142002.yaml
+2025-07-15 14:20:03 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to target07
+2025-07-15 14:20:03 [DEBUG] Generated topology JSON: {
+  "device": "staging-topology",
+  "bindings": [
+    {
+      "role": "connected-registry-monitor",
+      "provider": "providers.target.script",
+      "config": {
+        "applyScript": "get-connected-registry.sh",
+        "removeScript": "mock-remove.sh",
+        "getScript": "target-get.sh",
+        "scriptFolder": "external_distribution/staging"
+      }
+    },
+    {
+      "role": "staging-status-monitor",
+      "provider": "providers.target.script",
+      "config": {
+        "applyScript": "get-staging-status.sh",
+        "removeScript": "mock-remove.sh",
+        "getScript": "target-get.sh",
+        "scriptFolder": "external_distribution/staging"
+      }
+    }
+  ]
+}
+2025-07-15 14:20:04 [INFO] Patching target target07 with new topology
+2025-07-15 14:20:05 [INFO] Successfully updated target target07 with topology
+2025-07-15 14:20:05 [DEBUG] About to check ADD_COMPONENTS flag: false
+2025-07-15 14:20:05 [DEBUG] ADD_COMPONENTS is false, skipping components
+2025-07-15 14:20:05 [DEBUG] Finished topology processing for target07
+2025-07-15 14:20:05 [DEBUG] Completed processing target: target07
+2025-07-15 14:20:05 [DEBUG] About to return from add_bindings_to_target function
+2025-07-15 14:20:06 [DEBUG] Successfully processed target: target07 (count: 1)
+2025-07-15 14:20:06 [DEBUG] About to process target: target08
+2025-07-15 14:20:06 [INFO] Processing target: target08
+2025-07-15 14:20:08 [DEBUG] Backing up target target08 to /d/OneProject/symphony/scripts/backups/target08_20250715_142008.yaml
+2025-07-15 14:20:10 [INFO] Backup created: /d/OneProject/symphony/scripts/backups/target08_20250715_142008.yaml
+2025-07-15 14:20:10 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to target08
+2025-07-15 14:20:10 [DEBUG] Generated topology JSON: {
+  "device": "staging-topology",
+  "bindings": [
+    {
+      "role": "connected-registry-monitor",
+      "provider": "providers.target.script",
+      "config": {
+        "applyScript": "get-connected-registry.sh",
+        "removeScript": "mock-remove.sh",
+        "getScript": "target-get.sh",
+        "scriptFolder": "external_distribution/staging"
+      }
+    },
+    {
+      "role": "staging-status-monitor",
+      "provider": "providers.target.script",
+      "config": {
+        "applyScript": "get-staging-status.sh",
+        "removeScript": "mock-remove.sh",
+        "getScript": "target-get.sh",
+        "scriptFolder": "external_distribution/staging"
+      }
+    }
+  ]
+}
+2025-07-15 14:20:10 [INFO] Patching target target08 with new topology
+2025-07-15 14:20:11 [INFO] Successfully updated target target08 with topology
+2025-07-15 14:20:11 [DEBUG] About to check ADD_COMPONENTS flag: false
+2025-07-15 14:20:11 [DEBUG] ADD_COMPONENTS is false, skipping components
+2025-07-15 14:20:11 [DEBUG] Finished topology processing for target08
+2025-07-15 14:20:12 [DEBUG] Completed processing target: target08
+2025-07-15 14:20:12 [DEBUG] About to return from add_bindings_to_target function
+2025-07-15 14:20:12 [DEBUG] Successfully processed target: target08 (count: 2)
+2025-07-15 14:20:12 [DEBUG] Completed processing all targets. Success: 2, Total: 2
+2025-07-15 14:20:12 [INFO] Summary: 2/2 targets processed successfully
+2025-07-15 14:20:12 [INFO] All targets updated successfully!

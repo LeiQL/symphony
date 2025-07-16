@@ -1,0 +1,50 @@
+apiVersion: workflow.symphony/v1
+kind: CampaignContainer
+metadata:
+  name: target-bindings-campaign
+spec:  
+---
+apiVersion: workflow.symphony/v1
+kind: Campaign
+metadata:
+  name: target-bindings-campaign-v-version1
+spec:
+  rootResource: target-bindings-campaign
+  firstStage: "add-staging-bindings"
+  selfDriving: true
+  stages:
+    add-staging-bindings:
+      name: "add-staging-bindings"
+      provider: "providers.stage.script"     
+      config: 
+        scriptFolder: "scripts"
+        scriptEngine: "bash"
+        script: "add-target-bindings.sh"
+        # Script arguments passed to add-target-bindings.sh
+        scriptArgs: "--namespace symphony-system --targets my-target --verbose"
+      stageSelector: ${{$if($equal($output(add-staging-bindings,status), 0),'verify-bindings','failed')}}     
+    verify-bindings:
+      name: "verify-bindings"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "scripts"
+        scriptEngine: "bash"
+        script: "verify-target-bindings.sh"
+        scriptArgs: "--namespace symphony-system --targets my-target"
+      stageSelector: ${{$if($equal($output(verify-bindings,status), 0),'completed','failed')}}
+    completed:
+      name: "completed"
+      provider: "providers.stage.mock"
+      config:
+        outputs:
+          result: "Target bindings successfully added to my-target"
+          timestamp: ${{$now()}}
+      stageSelector: ""
+    failed:
+      name: "failed"
+      provider: "providers.stage.mock"
+      config:
+        outputs:
+          error: "Failed to add target bindings"
+          timestamp: ${{$now()}}
+      stageSelector: ""

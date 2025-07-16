@@ -1,0 +1,88 @@
+apiVersion: workflow.symphony/v1
+kind: CampaignContainer
+metadata:
+  name: conditional-target-bindings-campaign
+spec:  
+---
+apiVersion: workflow.symphony/v1
+kind: Campaign
+metadata:
+  name: conditional-target-bindings-campaign-v-version1
+spec:
+  rootResource: conditional-target-bindings-campaign
+  firstStage: "add-bindings"
+  selfDriving: true
+  stages:
+    add-bindings:
+      name: "add-bindings"
+      provider: "providers.stage.script"     
+      config: 
+        scriptFolder: "scripts"
+        scriptEngine: "bash"
+        script: "add-target-bindings.sh"
+        # Add staging bindings to my-target in symphony-system namespace
+        scriptArgs: "--namespace symphony-system --targets my-target --verbose"
+      # If script succeeds (exit code 0), go to verify-bindings, else go to failed
+      stageSelector: ${{$if($equal($output(add-bindings,status), 0),'verify-bindings','failed')}}
+    
+    verify-bindings:
+      name: "verify-bindings"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "scripts"
+        scriptEngine: "bash"
+        script: "verify-target-bindings.sh"
+        scriptArgs: "--namespace symphony-system --targets my-target --verbose"
+      # If verification succeeds, go to deploy-solution, else go to rollback
+      stageSelector: ${{$if($equal($output(verify-bindings,status), 0),'deploy-solution','rollback')}}
+    
+    deploy-solution:
+      name: "deploy-solution"
+      provider: "providers.stage.materialize"
+      config:
+        baseUrl: "http://symphony-service:8080/v1alpha2/"
+        user: "admin"
+        password: ""
+      inputs:
+        names:
+        - "my-target-solution"
+      # If deployment succeeds, go to completed, else go to rollback
+      stageSelector: ${{$if($equal($output(deploy-solution,status), 0),'completed','rollback')}}
+    
+    rollback:
+      name: "rollback"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "scripts"
+        scriptEngine: "bash"
+        script: "rollback-target-bindings.sh"
+        scriptArgs: "--namespace symphony-system --targets my-target --verbose"
+      stageSelector: "failed"
+    
+    completed:
+      name: "completed"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "scripts"
+        scriptEngine: "bash"
+        script: "generate-completion-report.sh"
+        scriptArgs: "--namespace symphony-system --targets my-target"
+        outputs:
+          result: "Target bindings successfully added and solution deployed to my-target"
+          timestamp: ${{$now()}}
+          bindings_added: "connected-registry-monitor,staging-status-monitor"
+          target: "my-target"
+          namespace: "symphony-system"
+          output_file: "scripts/target-bindings-output.txt"
+      stageSelector: ""
+    
+    failed:
+      name: "failed"
+      provider: "providers.stage.mock"
+      config:
+        outputs:
+          error: "Target bindings operation failed"
+          timestamp: ${{$now()}}
+          target: "my-target"
+          namespace: "symphony-system"
+      stageSelector: ""

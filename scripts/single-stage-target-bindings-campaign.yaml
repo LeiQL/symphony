@@ -1,0 +1,30 @@
+apiVersion: workflow.symphony/v1
+kind: CampaignContainer
+metadata:
+  name: simple-target-bindings-campaign
+spec:  
+---
+apiVersion: workflow.symphony/v1
+kind: Campaign
+metadata:
+  name: simple-target-bindings-campaign-v-version5
+spec:
+  rootResource: simple-target-bindings-campaign
+  firstStage: "add-topologies-and-components"
+  stages:
+    add-topologies-and-components:
+      name: "add-topologies-and-components"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "external_distribution"
+        scriptEngine: "bash"
+        script: "add-target-bindings4.sh"
+      inputs:
+        namespace: "default"
+        targets: "target10"
+        add_components: "true"
+        verbose: "true"
+        image_list: "demo-image-05:latest"
+        image_ref_key: "demo-image-05:latest"
+        image_ref_value: "lcc2-solution2-1.0.0.1"
+      stageSelector: ""

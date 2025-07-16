@@ -1,0 +1,6 @@
+apiVersion: workflow.symphony/v1
+kind: Activation
+metadata:
+  name: target-update-activation
+spec:
+  campaign: "simple-campaign-v-target-bindings-test"
