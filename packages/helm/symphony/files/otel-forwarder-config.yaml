@@ -270,13 +270,13 @@ processors:
   filter/userAudits:
     logs:
       log_record:
-        - 'not IsMatch(attributes["log"], "^.*activity.*$")'
-        #- attributes["type"] == nil or attributes["type"] != "userAudits"
+        #- 'not IsMatch(attributes["log"], "^.*activity.*$")'
+        - attributes["type"] == nil or attributes["type"] != "userAudits"
   filter/userDiagnostics:
     logs:
       log_record:
-        - 'not IsMatch(attributes["log"], "^.*diagnostics.*$")'
-        #- attributes["type"] == nil or attributes["type"] != "userDiagnostics
+        #- 'not IsMatch(attributes["log"], "^.*diagnostics.*$")'
+        - attributes["type"] == nil or attributes["type"] != "userDiagnostics
   transform/userAudits:
     error_mode: ignore
     log_statements:
