@@ -1,0 +1,710 @@
+2025-08-28 19:01:04 [INFO] Cleaning up target: staging-target30 for solution: staging-target30-test1.0.0.1
+2025-08-28 19:01:04 [INFO] Running command: kubectl get target staging-target30 -n default -o json
+2025-08-28 19:01:05 [DEBUG] Raw kubectl output: {
+    "apiVersion": "fabric.symphony/v1",
+    "kind": "Target",
+    "metadata": {
+        "annotations": {
+            "Guid": "a3122fa6-2804-40fc-9036-937fba51178d",
+            "SummaryJobIdKey": "2",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"fabric.symphony/v1\",\"kind\":\"Target\",\"metadata\":{\"annotations\":{},\"name\":\"staging-target30\",\"namespace\":\"default\"},\"spec\":{\"components\":[{\"name\":\"connection-string\",\"properties\":{\"imageList\":{\"staging-target30-test1.0.0.1\":[\"demo-image-02:latest\"]}},\"type\":\"staging\"}],\"topologies\":[{\"bindings\":[{\"config\":{\"applyScript\":\"trigger.sh\",\"getScript\":\"target-get.sh\",\"removeScript\":\"mock-remove.sh\",\"scriptFolder\":\"external_distribution/staging\"},\"provider\":\"providers.target.script\",\"role\":\"staging\"}]}]}}\n",
+            "management.azure.com/correlationId": "d0c39fb9-e86b-4a54-a2a1-8632f66eed27",
+            "management.azure.com/runningCorrelationId": "d0c39fb9-e86b-4a54-a2a1-8632f66eed27",
+            "target.fabric.symphony/started-at": "2025-08-28T10:51:03Z"
+        },
+        "creationTimestamp": "2025-08-28T10:21:02Z",
+        "finalizers": [
+            "target.fabric.symphony/finalizer"
+        ],
+        "generation": 1,
+        "name": "staging-target30",
+        "namespace": "default",
+        "resourceVersion": "12242946",
+        "uid": "a35412b8-dccf-45e1-8a2c-6e26533c5f79"
+    },
+    "spec": {
+        "components": [
+            {
+                "name": "connection-string",
+                "properties": {
+                    "imageList": {
+                        "staging-target30-test1.0.0.1": [
+                            "demo-image-02:latest"
+                        ]
+                    }
+                },
+                "type": "staging"
+            }
+        ],
+        "displayName": "staging-target30",
+        "scope": "default",
+        "topologies": [
+            {
+                "bindings": [
+                    {
+                        "config": {
+                            "applyScript": "trigger.sh",
+                            "getScript": "target-get.sh",
+                            "removeScript": "mock-remove.sh",
+                            "scriptFolder": "external_distribution/staging"
+                        },
+                        "provider": "providers.target.script",
+                        "role": "staging"
+                    }
+                ]
+            }
+        ]
+    },
+    "status": {
+        "deployed": 1,
+        "expectedRunningJobId": 2,
+        "generation": 1,
+        "lastModified": "2025-08-28T10:51:05Z",
+        "properties": {
+            "removed": "false"
+        },
+        "provisioningStatus": {
+            "error": {},
+            "operationId": "",
+            "output": {
+                "staging-target30.connection-string": "Untouched",
+                "staging-target30.staging-component": "Updated"
+            },
+            "percentComplete": 100,
+            "status": "Succeeded"
+        },
+        "runningJobId": 2,
+        "status": "Succeeded",
+        "targetStatuses": [
+            {
+                "componentStatuses": [
+                    {
+                        "name": "connection-string",
+                        "status": "Untouched - No error. connection-string is untouched"
+                    },
+                    {
+                        "name": "staging-component",
+                        "status": "Updated - {\"Success\":true,\"Message\":\"Successfully checked the download status of images. Total images checked: 1, fully downloaded: 1.\",\"ImagesToBeStaged\":{\"staging-target30-test1.0.0.1\":[\"demo-image-02:latest\"]},\"StagedImages\":[\"demo-image-02:latest\"]}"
+                    }
+                ],
+                "name": "staging-target30",
+                "status": "OK - "
+            }
+        ],
+        "targets": 1
+    }
+}
+2025-08-28 19:01:07 [ERROR] Invalid JSON returned for target staging-target30. Skipping.
+2025-08-28 19:02:42 [INFO] Cleaning up target: staging-target30 for solution: staging-target30-test1.0.0.1
+2025-08-28 19:02:42 [INFO] Running command: kubectl get target staging-target30 -n default -o json
+2025-08-28 19:02:43 [DEBUG] Raw kubectl output: {
+    "apiVersion": "fabric.symphony/v1",
+    "kind": "Target",
+    "metadata": {
+        "annotations": {
+            "Guid": "a3122fa6-2804-40fc-9036-937fba51178d",
+            "SummaryJobIdKey": "2",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"fabric.symphony/v1\",\"kind\":\"Target\",\"metadata\":{\"annotations\":{},\"name\":\"staging-target30\",\"namespace\":\"default\"},\"spec\":{\"components\":[{\"name\":\"connection-string\",\"properties\":{\"imageList\":{\"staging-target30-test1.0.0.1\":[\"demo-image-02:latest\"]}},\"type\":\"staging\"}],\"topologies\":[{\"bindings\":[{\"config\":{\"applyScript\":\"trigger.sh\",\"getScript\":\"target-get.sh\",\"removeScript\":\"mock-remove.sh\",\"scriptFolder\":\"external_distribution/staging\"},\"provider\":\"providers.target.script\",\"role\":\"staging\"}]}]}}\n",
+            "management.azure.com/correlationId": "d0c39fb9-e86b-4a54-a2a1-8632f66eed27",
+            "management.azure.com/runningCorrelationId": "d0c39fb9-e86b-4a54-a2a1-8632f66eed27",
+            "target.fabric.symphony/started-at": "2025-08-28T10:51:03Z"
+        },
+        "creationTimestamp": "2025-08-28T10:21:02Z",
+        "finalizers": [
+            "target.fabric.symphony/finalizer"
+        ],
+        "generation": 1,
+        "name": "staging-target30",
+        "namespace": "default",
+        "resourceVersion": "12242946",
+        "uid": "a35412b8-dccf-45e1-8a2c-6e26533c5f79"
+    },
+    "spec": {
+        "components": [
+            {
+                "name": "connection-string",
+                "properties": {
+                    "imageList": {
+                        "staging-target30-test1.0.0.1": [
+                            "demo-image-02:latest"
+                        ]
+                    }
+                },
+                "type": "staging"
+            }
+        ],
+        "displayName": "staging-target30",
+        "scope": "default",
+        "topologies": [
+            {
+                "bindings": [
+                    {
+                        "config": {
+                            "applyScript": "trigger.sh",
+                            "getScript": "target-get.sh",
+                            "removeScript": "mock-remove.sh",
+                            "scriptFolder": "external_distribution/staging"
+                        },
+                        "provider": "providers.target.script",
+                        "role": "staging"
+                    }
+                ]
+            }
+        ]
+    },
+    "status": {
+        "deployed": 1,
+        "expectedRunningJobId": 2,
+        "generation": 1,
+        "lastModified": "2025-08-28T10:51:05Z",
+        "properties": {
+            "removed": "false"
+        },
+        "provisioningStatus": {
+            "error": {},
+            "operationId": "",
+            "output": {
+                "staging-target30.connection-string": "Untouched",
+                "staging-target30.staging-component": "Updated"
+            },
+            "percentComplete": 100,
+            "status": "Succeeded"
+        },
+        "runningJobId": 2,
+        "status": "Succeeded",
+        "targetStatuses": [
+            {
+                "componentStatuses": [
+                    {
+                        "name": "connection-string",
+                        "status": "Untouched - No error. connection-string is untouched"
+                    },
+                    {
+                        "name": "staging-component",
+                        "status": "Updated - {\"Success\":true,\"Message\":\"Successfully checked the download status of images. Total images checked: 1, fully downloaded: 1.\",\"ImagesToBeStaged\":{\"staging-target30-test1.0.0.1\":[\"demo-image-02:latest\"]},\"StagedImages\":[\"demo-image-02:latest\"]}"
+                    }
+                ],
+                "name": "staging-target30",
+                "status": "OK - "
+            }
+        ],
+        "targets": 1
+    }
+}
+2025-08-28 19:02:44 [ERROR] Invalid JSON returned for target staging-target30. Skipping.
+2025-08-28 19:03:34 [INFO] Cleaning up target: staging-target30 for solution: staging-target30-test1.0.0.1
+2025-08-28 19:03:34 [INFO] Running command: kubectl get target staging-target30 -n default -o json
+2025-08-28 19:03:35 [DEBUG] Raw kubectl output: {
+    "apiVersion": "fabric.symphony/v1",
+    "kind": "Target",
+    "metadata": {
+        "annotations": {
+            "Guid": "a3122fa6-2804-40fc-9036-937fba51178d",
+            "SummaryJobIdKey": "2",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"fabric.symphony/v1\",\"kind\":\"Target\",\"metadata\":{\"annotations\":{},\"name\":\"staging-target30\",\"namespace\":\"default\"},\"spec\":{\"components\":[{\"name\":\"connection-string\",\"properties\":{\"imageList\":{\"staging-target30-test1.0.0.1\":[\"demo-image-02:latest\"]}},\"type\":\"staging\"}],\"topologies\":[{\"bindings\":[{\"config\":{\"applyScript\":\"trigger.sh\",\"getScript\":\"target-get.sh\",\"removeScript\":\"mock-remove.sh\",\"scriptFolder\":\"external_distribution/staging\"},\"provider\":\"providers.target.script\",\"role\":\"staging\"}]}]}}\n",
+            "management.azure.com/correlationId": "d0c39fb9-e86b-4a54-a2a1-8632f66eed27",
+            "management.azure.com/runningCorrelationId": "d0c39fb9-e86b-4a54-a2a1-8632f66eed27",
+            "target.fabric.symphony/started-at": "2025-08-28T10:51:03Z"
+        },
+        "creationTimestamp": "2025-08-28T10:21:02Z",
+        "finalizers": [
+            "target.fabric.symphony/finalizer"
+        ],
+        "generation": 1,
+        "name": "staging-target30",
+        "namespace": "default",
+        "resourceVersion": "12242946",
+        "uid": "a35412b8-dccf-45e1-8a2c-6e26533c5f79"
+    },
+    "spec": {
+        "components": [
+            {
+                "name": "connection-string",
+                "properties": {
+                    "imageList": {
+                        "staging-target30-test1.0.0.1": [
+                            "demo-image-02:latest"
+                        ]
+                    }
+                },
+                "type": "staging"
+            }
+        ],
+        "displayName": "staging-target30",
+        "scope": "default",
+        "topologies": [
+            {
+                "bindings": [
+                    {
+                        "config": {
+                            "applyScript": "trigger.sh",
+                            "getScript": "target-get.sh",
+                            "removeScript": "mock-remove.sh",
+                            "scriptFolder": "external_distribution/staging"
+                        },
+                        "provider": "providers.target.script",
+                        "role": "staging"
+                    }
+                ]
+            }
+        ]
+    },
+    "status": {
+        "deployed": 1,
+        "expectedRunningJobId": 2,
+        "generation": 1,
+        "lastModified": "2025-08-28T10:51:05Z",
+        "properties": {
+            "removed": "false"
+        },
+        "provisioningStatus": {
+            "error": {},
+            "operationId": "",
+            "output": {
+                "staging-target30.connection-string": "Untouched",
+                "staging-target30.staging-component": "Updated"
+            },
+            "percentComplete": 100,
+            "status": "Succeeded"
+        },
+        "runningJobId": 2,
+        "status": "Succeeded",
+        "targetStatuses": [
+            {
+                "componentStatuses": [
+                    {
+                        "name": "connection-string",
+                        "status": "Untouched - No error. connection-string is untouched"
+                    },
+                    {
+                        "name": "staging-component",
+                        "status": "Updated - {\"Success\":true,\"Message\":\"Successfully checked the download status of images. Total images checked: 1, fully downloaded: 1.\",\"ImagesToBeStaged\":{\"staging-target30-test1.0.0.1\":[\"demo-image-02:latest\"]},\"StagedImages\":[\"demo-image-02:latest\"]}"
+                    }
+                ],
+                "name": "staging-target30",
+                "status": "OK - "
+            }
+        ],
+        "targets": 1
+    }
+}
+2025-08-28 19:03:35 [ERROR] Invalid JSON returned for target staging-target30. Skipping.
+2025-09-01 16:31:22 [ERROR] Unknown argument: -namespace
+2025-09-01 16:31:34 [ERROR] Unknown argument: -namespace
+2025-09-01 16:32:26 [INFO] Cleaning up target: staging-targettest01 for solution: staging-targettest01-test1.0.0.1
+2025-09-01 16:32:26 [INFO] Running command: kubectl get target staging-targettest01 -n default -o json
+2025-09-01 16:32:28 [DEBUG] Raw kubectl output: {
+    "apiVersion": "fabric.symphony/v1",
+    "kind": "Target",
+    "metadata": {
+        "annotations": {
+            "Guid": "3231d186-fc1f-4da8-b56a-5191b5dcd21b",
+            "SummaryJobIdKey": "7",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"fabric.symphony/v1\",\"kind\":\"Target\",\"metadata\":{\"annotations\":{},\"name\":\"staging-targettest01\",\"namespace\":\"default\"},\"spec\":{\"topologies\":[{\"bindings\":[{\"config\":{\"inCluster\":\"true\"},\"provider\":\"providers.target.helm\",\"role\":\"helm.v3\"}]}]}}\n",
+            "management.azure.com/correlationId": "a8f76672-9a6c-4e44-897b-1752724d0e33",
+            "management.azure.com/runningCorrelationId": "a8f76672-9a6c-4e44-897b-1752724d0e33",
+            "target.fabric.symphony/started-at": "2025-09-01T08:09:15Z"
+        },
+        "creationTimestamp": "2025-09-01T06:38:57Z",
+        "finalizers": [
+            "target.fabric.symphony/finalizer"
+        ],
+        "generation": 3,
+        "name": "staging-targettest01",
+        "namespace": "default",
+        "resourceVersion": "14576786",
+        "uid": "1a593765-d934-4c8b-9869-7f3f28e35a7e"
+    },
+    "spec": {
+        "components": [
+            {
+                "name": "staging-component",
+                "properties": {
+                    "imageList": "{\"staging-targettest01-test1.0.0.1\": [\"demo-image-02:latest\"], \"staging-targettest01-test2.0.0.1\": [\"demo-image-02:latest\"]}"
+                },
+                "type": "staging"
+            }
+        ],
+        "displayName": "staging-targettest01",
+        "scope": "default",
+        "topologies": [
+            {
+                "bindings": [
+                    {
+                        "config": {
+                            "inCluster": "true"
+                        },
+                        "provider": "providers.target.helm",
+                        "role": "helm.v3"
+                    }
+                ]
+            },
+            {
+                "bindings": [
+                    {
+                        "config": {
+                            "applyScript": "trigger.sh",
+                            "getScript": "target-get.sh",
+                            "removeScript": "mock-remove.sh",
+                            "scriptFolder": "external_distribution/staging"
+                        },
+                        "provider": "providers.target.script",
+                        "role": "staging"
+                    }
+                ],
+                "device": "staging-topology"
+            }
+        ]
+    },
+    "status": {
+        "deployed": 1,
+        "expectedRunningJobId": 7,
+        "generation": 3,
+        "lastModified": "2025-09-01T08:09:19Z",
+        "properties": {
+            "removed": "false"
+        },
+        "provisioningStatus": {
+            "error": {},
+            "operationId": "",
+            "output": {
+                "staging-targettest01.staging-component": "Updated"
+            },
+            "percentComplete": 100,
+            "status": "Succeeded"
+        },
+        "runningJobId": 7,
+        "status": "Succeeded",
+        "targetStatuses": [
+            {
+                "componentStatuses": [
+                    {
+                        "name": "staging-component",
+                        "status": "Updated - {\"Success\":true,\"Message\":\"Successfully checked the download status of images. Total images checked: 1, fully downloaded: 1.\",\"ImagesToBeStaged\":{\"staging-targettest01-test1.0.0.1\":[\"demo-image-02:latest\"],\"staging-targettest01-test2.0.0.1\":[\"demo-image-02:latest\"]},\"StagedImages\":[\"demo-image-02:latest\"]}"
+                    }
+                ],
+                "name": "staging-targettest01",
+                "status": "OK - "
+            }
+        ],
+        "targets": 1
+    }
+}
+2025-09-01 16:32:29 [INFO] Removing solution staging-targettest01-test1.0.0.1 from imageList in target staging-targettest01
+2025-09-01 16:32:31 [INFO] Applying updated target JSON for staging-targettest01
+2025-09-01 16:32:35 [INFO] Cleaning up target: staging-targettest01 for solution: staging-targettest01-test2.0.0.1
+2025-09-01 16:32:35 [INFO] Running command: kubectl get target staging-targettest01 -n default -o json
+2025-09-01 16:32:36 [DEBUG] Raw kubectl output: {
+    "apiVersion": "fabric.symphony/v1",
+    "kind": "Target",
+    "metadata": {
+        "annotations": {
+            "Guid": "3231d186-fc1f-4da8-b56a-5191b5dcd21b",
+            "SummaryJobIdKey": "8",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"fabric.symphony/v1\",\"kind\":\"Target\",\"metadata\":{\"annotations\":{\"Guid\":\"3231d186-fc1f-4da8-b56a-5191b5dcd21b\",\"SummaryJobIdKey\":\"7\",\"management.azure.com/correlationId\":\"a8f76672-9a6c-4e44-897b-1752724d0e33\",\"management.azure.com/runningCorrelationId\":\"a8f76672-9a6c-4e44-897b-1752724d0e33\",\"target.fabric.symphony/started-at\":\"2025-09-01T08:09:15Z\"},\"creationTimestamp\":\"2025-09-01T06:38:57Z\",\"finalizers\":[\"target.fabric.symphony/finalizer\"],\"generation\":3,\"name\":\"staging-targettest01\",\"namespace\":\"default\",\"resourceVersion\":\"14576786\",\"uid\":\"1a593765-d934-4c8b-9869-7f3f28e35a7e\"},\"spec\":{\"components\":[{\"name\":\"staging-component\",\"properties\":{\"imageList\":{\"staging-targettest01-test2.0.0.1\":[\"demo-image-02:latest\"]}},\"type\":\"staging\"}],\"displayName\":\"staging-targettest01\",\"scope\":\"default\",\"topologies\":[{\"bindings\":[{\"config\":{\"inCluster\":\"true\"},\"provider\":\"providers.target.helm\",\"role\":\"helm.v3\"}]},{\"bindings\":[{\"config\":{\"applyScript\":\"trigger.sh\",\"getScript\":\"target-get.sh\",\"removeScript\":\"mock-remove.sh\",\"scriptFolder\":\"external_distribution/staging\"},\"provider\":\"providers.target.script\",\"role\":\"staging\"}],\"device\":\"staging-topology\"}]},\"status\":{\"deployed\":1,\"expectedRunningJobId\":7,\"generation\":3,\"lastModified\":\"2025-09-01T08:09:19Z\",\"properties\":{\"removed\":\"false\"},\"provisioningStatus\":{\"error\":{},\"operationId\":\"\",\"output\":{\"staging-targettest01.staging-component\":\"Updated\"},\"percentComplete\":100,\"status\":\"Succeeded\"},\"runningJobId\":7,\"status\":\"Succeeded\",\"targetStatuses\":[{\"componentStatuses\":[{\"name\":\"staging-component\",\"status\":\"Updated - {\\\"Success\\\":true,\\\"Message\\\":\\\"Successfully checked the download status of images. Total images checked: 1, fully downloaded: 1.\\\",\\\"ImagesToBeStaged\\\":{\\\"staging-targettest01-test1.0.0.1\\\":[\\\"demo-image-02:latest\\\"],\\\"staging-targettest01-test2.0.0.1\\\":[\\\"demo-image-02:latest\\\"]},\\\"StagedImages\\\":[\\\"demo-image-02:latest\\\"]}\"}],\"name\":\"staging-targettest01\",\"status\":\"OK - \"}],\"targets\":1}}\n",
+            "management.azure.com/correlationId": "15a089c8-5fd4-475d-b7b0-ad76953586ab",
+            "management.azure.com/runningCorrelationId": "15a089c8-5fd4-475d-b7b0-ad76953586ab",
+            "target.fabric.symphony/started-at": "2025-09-01T08:32:35Z"
+        },
+        "creationTimestamp": "2025-09-01T06:38:57Z",
+        "finalizers": [
+            "target.fabric.symphony/finalizer"
+        ],
+        "generation": 4,
+        "name": "staging-targettest01",
+        "namespace": "default",
+        "resourceVersion": "14586491",
+        "uid": "1a593765-d934-4c8b-9869-7f3f28e35a7e"
+    },
+    "spec": {
+        "components": [
+            {
+                "name": "staging-component",
+                "properties": {
+                    "imageList": {
+                        "staging-targettest01-test2.0.0.1": [
+                            "demo-image-02:latest"
+                        ]
+                    }
+                },
+                "type": "staging"
+            }
+        ],
+        "displayName": "staging-targettest01",
+        "scope": "default",
+        "topologies": [
+            {
+                "bindings": [
+                    {
+                        "config": {
+                            "inCluster": "true"
+                        },
+                        "provider": "providers.target.helm",
+                        "role": "helm.v3"
+                    }
+                ]
+            },
+            {
+                "bindings": [
+                    {
+                        "config": {
+                            "applyScript": "trigger.sh",
+                            "getScript": "target-get.sh",
+                            "removeScript": "mock-remove.sh",
+                            "scriptFolder": "external_distribution/staging"
+                        },
+                        "provider": "providers.target.script",
+                        "role": "staging"
+                    }
+                ],
+                "device": "staging-topology"
+            }
+        ]
+    },
+    "status": {
+        "expectedRunningJobId": 8,
+        "generation": 3,
+        "lastModified": "2025-09-01T08:32:35Z",
+        "properties": {
+            "removed": ""
+        },
+        "provisioningStatus": {
+            "error": {},
+            "operationId": "",
+            "percentComplete": 100,
+            "status": "Reconciling"
+        },
+        "runningJobId": 7,
+        "status": "Reconciling",
+        "statusDetails": "pending",
+        "targetStatuses": [
+            {
+                "componentStatuses": [
+                    {
+                        "name": "staging-component",
+                        "status": "Updated - {\"Success\":true,\"Message\":\"Successfully checked the download status of images. Total images checked: 1, fully downloaded: 1.\",\"ImagesToBeStaged\":{\"staging-targettest01-test1.0.0.1\":[\"demo-image-02:latest\"],\"staging-targettest01-test2.0.0.1\":[\"demo-image-02:latest\"]},\"StagedImages\":[\"demo-image-02:latest\"]}"
+                    }
+                ],
+                "name": "staging-targettest01",
+                "status": "OK - "
+            }
+        ]
+    }
+}
+2025-09-01 16:32:37 [INFO] Removing solution staging-targettest01-test2.0.0.1 from imageList in target staging-targettest01
+2025-09-01 16:32:39 [INFO] Removing staging component from target staging-targettest01 as no images are staged.
+2025-09-01 16:32:39 [INFO] Resetting reconciliation policy for target staging-targettest01.
+2025-09-01 16:32:39 [INFO] Applying updated target JSON for staging-targettest01
+2025-09-01 16:32:49 [ERROR] Failed to apply updated target JSON for staging-targettest01
+2025-09-01 16:35:06 [INFO] Cleaning up target: staging-targettest01 for solution: staging-targettest01-test1.0.0.1
+2025-09-01 16:35:06 [INFO] Running command: kubectl get target staging-targettest01 -n default -o json
+2025-09-01 16:35:07 [DEBUG] Raw kubectl output: {
+    "apiVersion": "fabric.symphony/v1",
+    "kind": "Target",
+    "metadata": {
+        "annotations": {
+            "Guid": "3231d186-fc1f-4da8-b56a-5191b5dcd21b",
+            "SummaryJobIdKey": "8",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"fabric.symphony/v1\",\"kind\":\"Target\",\"metadata\":{\"annotations\":{\"Guid\":\"3231d186-fc1f-4da8-b56a-5191b5dcd21b\",\"SummaryJobIdKey\":\"7\",\"management.azure.com/correlationId\":\"a8f76672-9a6c-4e44-897b-1752724d0e33\",\"management.azure.com/runningCorrelationId\":\"a8f76672-9a6c-4e44-897b-1752724d0e33\",\"target.fabric.symphony/started-at\":\"2025-09-01T08:09:15Z\"},\"creationTimestamp\":\"2025-09-01T06:38:57Z\",\"finalizers\":[\"target.fabric.symphony/finalizer\"],\"generation\":3,\"name\":\"staging-targettest01\",\"namespace\":\"default\",\"resourceVersion\":\"14576786\",\"uid\":\"1a593765-d934-4c8b-9869-7f3f28e35a7e\"},\"spec\":{\"components\":[{\"name\":\"staging-component\",\"properties\":{\"imageList\":{\"staging-targettest01-test2.0.0.1\":[\"demo-image-02:latest\"]}},\"type\":\"staging\"}],\"displayName\":\"staging-targettest01\",\"scope\":\"default\",\"topologies\":[{\"bindings\":[{\"config\":{\"inCluster\":\"true\"},\"provider\":\"providers.target.helm\",\"role\":\"helm.v3\"}]},{\"bindings\":[{\"config\":{\"applyScript\":\"trigger.sh\",\"getScript\":\"target-get.sh\",\"removeScript\":\"mock-remove.sh\",\"scriptFolder\":\"external_distribution/staging\"},\"provider\":\"providers.target.script\",\"role\":\"staging\"}],\"device\":\"staging-topology\"}]},\"status\":{\"deployed\":1,\"expectedRunningJobId\":7,\"generation\":3,\"lastModified\":\"2025-09-01T08:09:19Z\",\"properties\":{\"removed\":\"false\"},\"provisioningStatus\":{\"error\":{},\"operationId\":\"\",\"output\":{\"staging-targettest01.staging-component\":\"Updated\"},\"percentComplete\":100,\"status\":\"Succeeded\"},\"runningJobId\":7,\"status\":\"Succeeded\",\"targetStatuses\":[{\"componentStatuses\":[{\"name\":\"staging-component\",\"status\":\"Updated - {\\\"Success\\\":true,\\\"Message\\\":\\\"Successfully checked the download status of images. Total images checked: 1, fully downloaded: 1.\\\",\\\"ImagesToBeStaged\\\":{\\\"staging-targettest01-test1.0.0.1\\\":[\\\"demo-image-02:latest\\\"],\\\"staging-targettest01-test2.0.0.1\\\":[\\\"demo-image-02:latest\\\"]},\\\"StagedImages\\\":[\\\"demo-image-02:latest\\\"]}\"}],\"name\":\"staging-targettest01\",\"status\":\"OK - \"}],\"targets\":1}}\n",
+            "management.azure.com/correlationId": "15a089c8-5fd4-475d-b7b0-ad76953586ab",
+            "management.azure.com/runningCorrelationId": "15a089c8-5fd4-475d-b7b0-ad76953586ab",
+            "target.fabric.symphony/started-at": "2025-09-01T08:32:35Z"
+        },
+        "creationTimestamp": "2025-09-01T06:38:57Z",
+        "finalizers": [
+            "target.fabric.symphony/finalizer"
+        ],
+        "generation": 4,
+        "name": "staging-targettest01",
+        "namespace": "default",
+        "resourceVersion": "14586519",
+        "uid": "1a593765-d934-4c8b-9869-7f3f28e35a7e"
+    },
+    "spec": {
+        "components": [
+            {
+                "name": "staging-component",
+                "properties": {
+                    "imageList": {
+                        "staging-targettest01-test2.0.0.1": [
+                            "demo-image-02:latest"
+                        ]
+                    }
+                },
+                "type": "staging"
+            }
+        ],
+        "displayName": "staging-targettest01",
+        "scope": "default",
+        "topologies": [
+            {
+                "bindings": [
+                    {
+                        "config": {
+                            "inCluster": "true"
+                        },
+                        "provider": "providers.target.helm",
+                        "role": "helm.v3"
+                    }
+                ]
+            },
+            {
+                "bindings": [
+                    {
+                        "config": {
+                            "applyScript": "trigger.sh",
+                            "getScript": "target-get.sh",
+                            "removeScript": "mock-remove.sh",
+                            "scriptFolder": "external_distribution/staging"
+                        },
+                        "provider": "providers.target.script",
+                        "role": "staging"
+                    }
+                ],
+                "device": "staging-topology"
+            }
+        ]
+    },
+    "status": {
+        "deployed": 1,
+        "expectedRunningJobId": 8,
+        "generation": 4,
+        "lastModified": "2025-09-01T08:32:39Z",
+        "properties": {
+            "removed": "false"
+        },
+        "provisioningStatus": {
+            "error": {},
+            "operationId": "",
+            "output": {
+                "staging-targettest01.staging-component": "Updated"
+            },
+            "percentComplete": 100,
+            "status": "Succeeded"
+        },
+        "runningJobId": 8,
+        "status": "Succeeded",
+        "targetStatuses": [
+            {
+                "componentStatuses": [
+                    {
+                        "name": "staging-component",
+                        "status": "Updated - {\"Success\":true,\"Message\":\"Successfully checked the download status of images. Total images checked: 1, fully downloaded: 1.\",\"ImagesToBeStaged\":{\"staging-targettest01-test2.0.0.1\":[\"demo-image-02:latest\"]},\"StagedImages\":[\"demo-image-02:latest\"]}"
+                    }
+                ],
+                "name": "staging-targettest01",
+                "status": "OK - "
+            }
+        ],
+        "targets": 1
+    }
+}
+2025-09-01 16:35:08 [INFO] Solution staging-targettest01-test1.0.0.1 not found in imageList for target staging-targettest01. Nothing to remove.
+2025-09-01 16:35:08 [INFO] Applying updated target JSON for staging-targettest01
+2025-09-01 16:35:11 [INFO] Cleaning up target: staging-targettest01 for solution: staging-targettest01-test2.0.0.1
+2025-09-01 16:35:11 [INFO] Running command: kubectl get target staging-targettest01 -n default -o json
+2025-09-01 16:35:12 [DEBUG] Raw kubectl output: {
+    "apiVersion": "fabric.symphony/v1",
+    "kind": "Target",
+    "metadata": {
+        "annotations": {
+            "Guid": "3231d186-fc1f-4da8-b56a-5191b5dcd21b",
+            "SummaryJobIdKey": "8",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"fabric.symphony/v1\",\"kind\":\"Target\",\"metadata\":{\"annotations\":{\"Guid\":\"3231d186-fc1f-4da8-b56a-5191b5dcd21b\",\"SummaryJobIdKey\":\"8\",\"management.azure.com/correlationId\":\"15a089c8-5fd4-475d-b7b0-ad76953586ab\",\"management.azure.com/runningCorrelationId\":\"15a089c8-5fd4-475d-b7b0-ad76953586ab\",\"target.fabric.symphony/started-at\":\"2025-09-01T08:32:35Z\"},\"creationTimestamp\":\"2025-09-01T06:38:57Z\",\"finalizers\":[\"target.fabric.symphony/finalizer\"],\"generation\":4,\"name\":\"staging-targettest01\",\"namespace\":\"default\",\"resourceVersion\":\"14586519\",\"uid\":\"1a593765-d934-4c8b-9869-7f3f28e35a7e\"},\"spec\":{\"components\":[{\"name\":\"staging-component\",\"properties\":{\"imageList\":{\"staging-targettest01-test2.0.0.1\":[\"demo-image-02:latest\"]}},\"type\":\"staging\"}],\"displayName\":\"staging-targettest01\",\"scope\":\"default\",\"topologies\":[{\"bindings\":[{\"config\":{\"inCluster\":\"true\"},\"provider\":\"providers.target.helm\",\"role\":\"helm.v3\"}]},{\"bindings\":[{\"config\":{\"applyScript\":\"trigger.sh\",\"getScript\":\"target-get.sh\",\"removeScript\":\"mock-remove.sh\",\"scriptFolder\":\"external_distribution/staging\"},\"provider\":\"providers.target.script\",\"role\":\"staging\"}],\"device\":\"staging-topology\"}]},\"status\":{\"deployed\":1,\"expectedRunningJobId\":8,\"generation\":4,\"lastModified\":\"2025-09-01T08:32:39Z\",\"properties\":{\"removed\":\"false\"},\"provisioningStatus\":{\"error\":{},\"operationId\":\"\",\"output\":{\"staging-targettest01.staging-component\":\"Updated\"},\"percentComplete\":100,\"status\":\"Succeeded\"},\"runningJobId\":8,\"status\":\"Succeeded\",\"targetStatuses\":[{\"componentStatuses\":[{\"name\":\"staging-component\",\"status\":\"Updated - {\\\"Success\\\":true,\\\"Message\\\":\\\"Successfully checked the download status of images. Total images checked: 1, fully downloaded: 1.\\\",\\\"ImagesToBeStaged\\\":{\\\"staging-targettest01-test2.0.0.1\\\":[\\\"demo-image-02:latest\\\"]},\\\"StagedImages\\\":[\\\"demo-image-02:latest\\\"]}\"}],\"name\":\"staging-targettest01\",\"status\":\"OK - \"}],\"targets\":1}}\n",
+            "management.azure.com/correlationId": "15a089c8-5fd4-475d-b7b0-ad76953586ab",
+            "management.azure.com/runningCorrelationId": "15a089c8-5fd4-475d-b7b0-ad76953586ab",
+            "target.fabric.symphony/started-at": "2025-09-01T08:32:35Z"
+        },
+        "creationTimestamp": "2025-09-01T06:38:57Z",
+        "finalizers": [
+            "target.fabric.symphony/finalizer"
+        ],
+        "generation": 4,
+        "name": "staging-targettest01",
+        "namespace": "default",
+        "resourceVersion": "14587565",
+        "uid": "1a593765-d934-4c8b-9869-7f3f28e35a7e"
+    },
+    "spec": {
+        "components": [
+            {
+                "name": "staging-component",
+                "properties": {
+                    "imageList": {
+                        "staging-targettest01-test2.0.0.1": [
+                            "demo-image-02:latest"
+                        ]
+                    }
+                },
+                "type": "staging"
+            }
+        ],
+        "displayName": "staging-targettest01",
+        "scope": "default",
+        "topologies": [
+            {
+                "bindings": [
+                    {
+                        "config": {
+                            "inCluster": "true"
+                        },
+                        "provider": "providers.target.helm",
+                        "role": "helm.v3"
+                    }
+                ]
+            },
+            {
+                "bindings": [
+                    {
+                        "config": {
+                            "applyScript": "trigger.sh",
+                            "getScript": "target-get.sh",
+                            "removeScript": "mock-remove.sh",
+                            "scriptFolder": "external_distribution/staging"
+                        },
+                        "provider": "providers.target.script",
+                        "role": "staging"
+                    }
+                ],
+                "device": "staging-topology"
+            }
+        ]
+    },
+    "status": {
+        "deployed": 1,
+        "expectedRunningJobId": 8,
+        "generation": 4,
+        "lastModified": "2025-09-01T08:32:39Z",
+        "properties": {
+            "removed": "false"
+        },
+        "provisioningStatus": {
+            "error": {},
+            "operationId": "",
+            "output": {
+                "staging-targettest01.staging-component": "Updated"
+            },
+            "percentComplete": 100,
+            "status": "Succeeded"
+        },
+        "runningJobId": 8,
+        "status": "Succeeded",
+        "targetStatuses": [
+            {
+                "componentStatuses": [
+                    {
+                        "name": "staging-component",
+                        "status": "Updated - {\"Success\":true,\"Message\":\"Successfully checked the download status of images. Total images checked: 1, fully downloaded: 1.\",\"ImagesToBeStaged\":{\"staging-targettest01-test2.0.0.1\":[\"demo-image-02:latest\"]},\"StagedImages\":[\"demo-image-02:latest\"]}"
+                    }
+                ],
+                "name": "staging-targettest01",
+                "status": "OK - "
+            }
+        ],
+        "targets": 1
+    }
+}
+2025-09-01 16:35:13 [INFO] Removing solution staging-targettest01-test2.0.0.1 from imageList in target staging-targettest01
+2025-09-01 16:35:15 [INFO] Removing staging component from target staging-targettest01 as no images are staged.
+2025-09-01 16:35:16 [INFO] Resetting reconciliation policy for target staging-targettest01.
+2025-09-01 16:35:16 [INFO] Applying updated target JSON for staging-targettest01

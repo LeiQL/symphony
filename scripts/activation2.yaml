@@ -1,6 +1,6 @@
 apiVersion: workflow.symphony/v1
 kind: Activation
 metadata:
-  name: target-update-activation2
+  name: target-update-activation33
 spec:
-  campaign: "simple-target-bindings-campaign-v-version1"
+  campaign: "simple-target-bindings-campaign-v-version33"

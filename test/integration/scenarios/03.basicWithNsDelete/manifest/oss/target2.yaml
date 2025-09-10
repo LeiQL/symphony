@@ -1,7 +1,7 @@
 apiVersion: fabric.symphony/v1
 kind: Target
 metadata:
-  name: helm-target 
+  name: testtarget2
 spec:  
   topologies:
   - bindings:

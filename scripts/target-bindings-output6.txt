@@ -122,3 +122,240 @@
 2025-07-15 14:20:12 [DEBUG] Completed processing all targets. Success: 2, Total: 2
 2025-07-15 14:20:12 [INFO] Summary: 2/2 targets processed successfully
 2025-07-15 14:20:12 [INFO] All targets updated successfully!
+2025-08-20 21:24:53 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:24:53 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:24:53 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820212450, dry-run=True
+2025-08-20 21:24:53 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:24:53 [DEBUG] About to process target: test-target-20250820212450
+2025-08-20 21:24:53 [INFO] Processing target: test-target-20250820212450
+2025-08-20 21:24:55 [DEBUG] Backing up target test-target-20250820212450 to D:\OneProject\symphony\scripts\backups\test-target-20250820212450_20250820_212455.yaml
+2025-08-20 21:24:56 [INFO] Backup created: D:\OneProject\symphony\scripts\backups\test-target-20250820212450_20250820_212455.yaml
+2025-08-20 21:24:56 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to test-target-20250820212450
+2025-08-20 21:24:56 [DEBUG] Generated topology object
+2025-08-20 21:24:56 [INFO] DRY-RUN: Would add the following topology to test-target-20250820212450:
+2025-08-20 21:24:56 [DEBUG] Completed processing target: test-target-20250820212450
+2025-08-20 21:24:56 [DEBUG] About to return from Add-BindingsToTarget function
+2025-08-20 21:24:56 [DEBUG] Successfully processed target: test-target-20250820212450 (count: 1)
+2025-08-20 21:24:56 [DEBUG] Completed processing all targets. Success: 1, Total: 1
+2025-08-20 21:24:56 [INFO] Summary: 1/1 targets processed successfully
+2025-08-20 21:24:56 [INFO] DRY-RUN completed. No changes were applied.
+2025-08-20 21:24:56 [INFO] Remove -DryRun flag to apply changes.
+2025-08-20 21:24:56 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:24:56 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:24:56 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820212450, dry-run=False
+2025-08-20 21:24:56 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:24:56 [DEBUG] About to process target: test-target-20250820212450
+2025-08-20 21:24:56 [INFO] Processing target: test-target-20250820212450
+2025-08-20 21:24:58 [DEBUG] Backing up target test-target-20250820212450 to D:\OneProject\symphony\scripts\backups\test-target-20250820212450_20250820_212458.yaml
+2025-08-20 21:24:59 [INFO] Backup created: D:\OneProject\symphony\scripts\backups\test-target-20250820212450_20250820_212458.yaml
+2025-08-20 21:24:59 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to test-target-20250820212450
+2025-08-20 21:24:59 [DEBUG] Generated topology object
+2025-08-20 21:24:59 [INFO] Patching target test-target-20250820212450 with new topology
+2025-08-20 21:25:00 [ERROR] Exception during patch operation: Error from server (BadRequest): error decoding patch: invalid character 'p' looking for beginning of object key string
+2025-08-20 21:25:00 [INFO] Restore from backup: kubectl apply -f D:\OneProject\symphony\scripts\backups\test-target-20250820212450_20250820_212458.yaml
+2025-08-20 21:25:00 [DEBUG] Failed to process target: test-target-20250820212450
+2025-08-20 21:25:00 [DEBUG] Completed processing all targets. Success: 0, Total: 1
+2025-08-20 21:25:00 [INFO] Summary: 0/1 targets processed successfully
+2025-08-20 21:25:00 [WARN] Some targets failed to update. Check logs above for details.
+2025-08-20 21:30:19 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:30:19 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:30:19 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820213015, dry-run=True
+2025-08-20 21:30:19 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:30:19 [DEBUG] About to process target: test-target-20250820213015
+2025-08-20 21:30:19 [INFO] Processing target: test-target-20250820213015
+2025-08-20 21:30:21 [DEBUG] Backing up target test-target-20250820213015 to D:\OneProject\symphony\scripts\backups\test-target-20250820213015_20250820_213021.yaml
+2025-08-20 21:30:22 [INFO] Backup created: D:\OneProject\symphony\scripts\backups\test-target-20250820213015_20250820_213021.yaml
+2025-08-20 21:30:22 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to test-target-20250820213015
+2025-08-20 21:30:22 [DEBUG] Generated topology object
+2025-08-20 21:30:22 [INFO] DRY-RUN: Would add the following topology to test-target-20250820213015:
+2025-08-20 21:30:22 [DEBUG] Completed processing target: test-target-20250820213015
+2025-08-20 21:30:22 [DEBUG] About to return from Add-BindingsToTarget function
+2025-08-20 21:30:22 [DEBUG] Successfully processed target: test-target-20250820213015 (count: 1)
+2025-08-20 21:30:22 [DEBUG] Completed processing all targets. Success: 1, Total: 1
+2025-08-20 21:30:22 [INFO] Summary: 1/1 targets processed successfully
+2025-08-20 21:30:22 [INFO] DRY-RUN completed. No changes were applied.
+2025-08-20 21:30:22 [INFO] Remove -DryRun flag to apply changes.
+2025-08-20 21:30:22 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:30:22 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:30:22 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820213015, dry-run=False
+2025-08-20 21:30:22 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:30:22 [DEBUG] About to process target: test-target-20250820213015
+2025-08-20 21:30:22 [INFO] Processing target: test-target-20250820213015
+2025-08-20 21:30:24 [DEBUG] Backing up target test-target-20250820213015 to D:\OneProject\symphony\scripts\backups\test-target-20250820213015_20250820_213024.yaml
+2025-08-20 21:30:25 [INFO] Backup created: D:\OneProject\symphony\scripts\backups\test-target-20250820213015_20250820_213024.yaml
+2025-08-20 21:30:25 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to test-target-20250820213015
+2025-08-20 21:30:25 [DEBUG] Generated topology object
+2025-08-20 21:30:25 [INFO] Patching target test-target-20250820213015 with new topology
+2025-08-20 21:30:25 [DEBUG] Patch JSON: {"path":"/spec/topologies/-","op":"add","value":{"bindings":[{"config":{"getScript":"target-get.sh","applyScript":"get-connected-registry.sh","scriptFolder":"external_distribution/staging","removeScript":"mock-remove.sh"},"provider":"providers.target.script","role":"connected-registry-monitor"},{"config":{"getScript":"target-get.sh","applyScript":"get-staging-status.sh","scriptFolder":"external_distribution/staging","removeScript":"mock-remove.sh"},"provider":"providers.target.script","role":"staging-status-monitor"}],"device":"staging-topology"}}
+2025-08-20 21:30:26 [ERROR] Exception during patch operation: Error from server (BadRequest): error decoding patch: json: cannot unmarshal object into Go value of type []handlers.jsonPatchOp
+2025-08-20 21:30:26 [INFO] Restore from backup: kubectl apply -f D:\OneProject\symphony\scripts\backups\test-target-20250820213015_20250820_213024.yaml
+2025-08-20 21:30:26 [DEBUG] Failed to process target: test-target-20250820213015
+2025-08-20 21:30:26 [DEBUG] Completed processing all targets. Success: 0, Total: 1
+2025-08-20 21:30:26 [INFO] Summary: 0/1 targets processed successfully
+2025-08-20 21:30:26 [WARN] Some targets failed to update. Check logs above for details.
+2025-08-20 21:31:41 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:31:41 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:31:41 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820213137, dry-run=True
+2025-08-20 21:31:41 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:31:41 [DEBUG] About to process target: test-target-20250820213137
+2025-08-20 21:31:41 [INFO] Processing target: test-target-20250820213137
+2025-08-20 21:31:43 [DEBUG] Backing up target test-target-20250820213137 to D:\OneProject\symphony\scripts\backups\test-target-20250820213137_20250820_213143.yaml
+2025-08-20 21:31:44 [INFO] Backup created: D:\OneProject\symphony\scripts\backups\test-target-20250820213137_20250820_213143.yaml
+2025-08-20 21:31:44 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to test-target-20250820213137
+2025-08-20 21:31:44 [DEBUG] Generated topology object
+2025-08-20 21:31:44 [INFO] DRY-RUN: Would add the following topology to test-target-20250820213137:
+2025-08-20 21:31:44 [DEBUG] Completed processing target: test-target-20250820213137
+2025-08-20 21:31:44 [DEBUG] About to return from Add-BindingsToTarget function
+2025-08-20 21:31:44 [DEBUG] Successfully processed target: test-target-20250820213137 (count: 1)
+2025-08-20 21:31:44 [DEBUG] Completed processing all targets. Success: 1, Total: 1
+2025-08-20 21:31:44 [INFO] Summary: 1/1 targets processed successfully
+2025-08-20 21:31:44 [INFO] DRY-RUN completed. No changes were applied.
+2025-08-20 21:31:44 [INFO] Remove -DryRun flag to apply changes.
+2025-08-20 21:31:44 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:31:44 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:31:44 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820213137, dry-run=False
+2025-08-20 21:31:44 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:31:44 [DEBUG] About to process target: test-target-20250820213137
+2025-08-20 21:31:44 [INFO] Processing target: test-target-20250820213137
+2025-08-20 21:31:45 [DEBUG] Backing up target test-target-20250820213137 to D:\OneProject\symphony\scripts\backups\test-target-20250820213137_20250820_213145.yaml
+2025-08-20 21:31:46 [INFO] Backup created: D:\OneProject\symphony\scripts\backups\test-target-20250820213137_20250820_213145.yaml
+2025-08-20 21:31:46 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to test-target-20250820213137
+2025-08-20 21:31:46 [DEBUG] Generated topology object
+2025-08-20 21:31:46 [INFO] Patching target test-target-20250820213137 with new topology
+2025-08-20 21:31:46 [DEBUG] Patch JSON: {"path":"/spec/topologies/-","op":"add","value":{"bindings":[{"config":{"getScript":"target-get.sh","applyScript":"get-connected-registry.sh","scriptFolder":"external_distribution/staging","removeScript":"mock-remove.sh"},"provider":"providers.target.script","role":"connected-registry-monitor"},{"config":{"getScript":"target-get.sh","applyScript":"get-staging-status.sh","scriptFolder":"external_distribution/staging","removeScript":"mock-remove.sh"},"provider":"providers.target.script","role":"staging-status-monitor"}],"device":"staging-topology"}}
+2025-08-20 21:31:48 [ERROR] Exception during patch operation: Error from server (BadRequest): error decoding patch: json: cannot unmarshal object into Go value of type []handlers.jsonPatchOp
+2025-08-20 21:31:48 [INFO] Restore from backup: kubectl apply -f D:\OneProject\symphony\scripts\backups\test-target-20250820213137_20250820_213145.yaml
+2025-08-20 21:31:48 [DEBUG] Failed to process target: test-target-20250820213137
+2025-08-20 21:31:48 [DEBUG] Completed processing all targets. Success: 0, Total: 1
+2025-08-20 21:31:48 [INFO] Summary: 0/1 targets processed successfully
+2025-08-20 21:31:48 [WARN] Some targets failed to update. Check logs above for details.
+2025-08-20 21:34:03 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:34:03 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:34:03 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820213400, dry-run=True
+2025-08-20 21:34:03 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:34:03 [DEBUG] About to process target: test-target-20250820213400
+2025-08-20 21:34:03 [INFO] Processing target: test-target-20250820213400
+2025-08-20 21:34:05 [DEBUG] Backing up target test-target-20250820213400 to D:\OneProject\symphony\scripts\backups\test-target-20250820213400_20250820_213405.yaml
+2025-08-20 21:34:06 [INFO] Backup created: D:\OneProject\symphony\scripts\backups\test-target-20250820213400_20250820_213405.yaml
+2025-08-20 21:34:06 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to test-target-20250820213400
+2025-08-20 21:34:06 [DEBUG] Generated topology object
+2025-08-20 21:34:06 [INFO] DRY-RUN: Would add the following topology to test-target-20250820213400:
+2025-08-20 21:34:06 [DEBUG] Completed processing target: test-target-20250820213400
+2025-08-20 21:34:06 [DEBUG] About to return from Add-BindingsToTarget function
+2025-08-20 21:34:06 [DEBUG] Successfully processed target: test-target-20250820213400 (count: 1)
+2025-08-20 21:34:06 [DEBUG] Completed processing all targets. Success: 1, Total: 1
+2025-08-20 21:34:06 [INFO] Summary: 1/1 targets processed successfully
+2025-08-20 21:34:06 [INFO] DRY-RUN completed. No changes were applied.
+2025-08-20 21:34:06 [INFO] Remove -DryRun flag to apply changes.
+2025-08-20 21:34:06 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:34:06 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:34:06 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820213400, dry-run=False
+2025-08-20 21:34:06 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:34:06 [DEBUG] About to process target: test-target-20250820213400
+2025-08-20 21:34:06 [INFO] Processing target: test-target-20250820213400
+2025-08-20 21:34:08 [DEBUG] Backing up target test-target-20250820213400 to D:\OneProject\symphony\scripts\backups\test-target-20250820213400_20250820_213408.yaml
+2025-08-20 21:34:09 [INFO] Backup created: D:\OneProject\symphony\scripts\backups\test-target-20250820213400_20250820_213408.yaml
+2025-08-20 21:34:09 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to test-target-20250820213400
+2025-08-20 21:34:09 [DEBUG] Generated topology object
+2025-08-20 21:34:09 [INFO] Patching target test-target-20250820213400 with new topology
+2025-08-20 21:34:09 [DEBUG] Patch JSON: [{"path":"/spec/topologies/-","op":"add","value":{"bindings":[{"config":{"getScript":"target-get.sh","applyScript":"get-connected-registry.sh","scriptFolder":"external_distribution/staging","removeScript":"mock-remove.sh"},"provider":"providers.target.script","role":"connected-registry-monitor"},{"config":{"getScript":"target-get.sh","applyScript":"get-staging-status.sh","scriptFolder":"external_distribution/staging","removeScript":"mock-remove.sh"},"provider":"providers.target.script","role":"staging-status-monitor"}],"device":"staging-topology"}}]
+2025-08-20 21:34:10 [INFO] Successfully updated target test-target-20250820213400 with topology
+2025-08-20 21:34:10 [DEBUG] About to check ADD_COMPONENTS flag: False
+2025-08-20 21:34:10 [DEBUG] ADD_COMPONENTS is false, skipping components
+2025-08-20 21:34:10 [DEBUG] Finished topology processing for test-target-20250820213400
+2025-08-20 21:34:10 [DEBUG] Successfully processed target: test-target-20250820213400 (count: 1)
+2025-08-20 21:34:10 [DEBUG] Completed processing all targets. Success: 1, Total: 1
+2025-08-20 21:34:10 [INFO] Summary: 1/1 targets processed successfully
+2025-08-20 21:34:10 [INFO] All targets updated successfully!
+2025-08-20 21:34:11 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:34:11 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:34:11 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820213400, dry-run=False
+2025-08-20 21:34:11 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:34:11 [DEBUG] About to process target: test-target-20250820213400
+2025-08-20 21:34:11 [INFO] Processing target: test-target-20250820213400
+2025-08-20 21:34:13 [WARN] Staging topology with 2 bindings including connected-registry-monitor already exists in test-target-20250820213400, skipping
+2025-08-20 21:34:13 [DEBUG] Successfully processed target: test-target-20250820213400 (count: 1)
+2025-08-20 21:34:13 [DEBUG] Completed processing all targets. Success: 1, Total: 1
+2025-08-20 21:34:13 [INFO] Summary: 1/1 targets processed successfully
+2025-08-20 21:34:13 [INFO] All targets updated successfully!
+2025-08-20 21:34:38 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:42:20 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:42:20 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:42:20 [DEBUG] Parameters: namespace=default, targets=test-components-target, dry-run=False
+2025-08-20 21:42:20 [INFO] Processing 1 target(s) in namespace default
+2025-08-20 21:42:20 [DEBUG] About to process target: test-components-target
+2025-08-20 21:42:20 [INFO] Processing target: test-components-target
+2025-08-20 21:42:22 [DEBUG] Backing up target test-components-target to D:\OneProject\symphony\scripts\backups\test-components-target_20250820_214222.yaml
+2025-08-20 21:42:23 [INFO] Backup created: D:\OneProject\symphony\scripts\backups\test-components-target_20250820_214222.yaml
+2025-08-20 21:42:23 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to test-components-target
+2025-08-20 21:42:23 [DEBUG] Generated topology object
+2025-08-20 21:42:23 [INFO] Patching target test-components-target with new topology
+2025-08-20 21:42:23 [DEBUG] Patch JSON: [{"path":"/spec/topologies/-","op":"add","value":{"bindings":[{"config":{"getScript":"target-get.sh","applyScript":"get-connected-registry.sh","scriptFolder":"external_distribution/staging","removeScript":"mock-remove.sh"},"provider":"providers.target.script","role":"connected-registry-monitor"},{"config":{"getScript":"target-get.sh","applyScript":"get-staging-status.sh","scriptFolder":"external_distribution/staging","removeScript":"mock-remove.sh"},"provider":"providers.target.script","role":"staging-status-monitor"}],"device":"staging-topology"}}]
+2025-08-20 21:42:24 [INFO] Successfully updated target test-components-target with topology
+2025-08-20 21:42:24 [DEBUG] About to check ADD_COMPONENTS flag: True
+2025-08-20 21:42:24 [INFO] Adding components to test-components-target
+2025-08-20 21:42:25 [DEBUG] Generated components array
+2025-08-20 21:42:25 [DEBUG] Created components patch
+2025-08-20 21:42:26 [INFO] Successfully added components to test-components-target
+2025-08-20 21:42:26 [DEBUG] Finished topology processing for test-components-target
+2025-08-20 21:42:26 [DEBUG] Successfully processed target: test-components-target (count: 1)
+2025-08-20 21:42:26 [DEBUG] Completed processing all targets. Success: 1, Total: 1
+2025-08-20 21:42:26 [INFO] Summary: 1/1 targets processed successfully
+2025-08-20 21:42:26 [INFO] All targets updated successfully!
+2025-08-20 21:57:03 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:57:03 [INFO] Processing 1 target(s) in namespace nonexistent
+2025-08-20 21:57:03 [INFO] Processing target: nonexistent-target
+2025-08-20 21:57:04 [ERROR] Target nonexistent-target not found in namespace nonexistent
+2025-08-20 21:57:04 [INFO] Summary: 0/1 targets processed successfully
+2025-08-20 21:57:04 [WARN] Some targets failed to update. Check logs above for details.
+2025-08-20 21:57:19 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:57:19 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:57:19 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820215716, dry-run=True
+2025-08-20 21:57:19 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:57:19 [DEBUG] About to process target: test-target-20250820215716
+2025-08-20 21:57:19 [INFO] Processing target: test-target-20250820215716
+2025-08-20 21:57:21 [DEBUG] Backing up target test-target-20250820215716 to D:\OneProject\symphony\scripts\backups\test-target-20250820215716_20250820_215721.yaml
+2025-08-20 21:57:22 [INFO] Backup created: D:\OneProject\symphony\scripts\backups\test-target-20250820215716_20250820_215721.yaml
+2025-08-20 21:57:22 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to test-target-20250820215716
+2025-08-20 21:57:22 [DEBUG] Generated topology object
+2025-08-20 21:57:22 [INFO] DRY-RUN: Would add the following topology to test-target-20250820215716:
+2025-08-20 21:57:22 [DEBUG] Completed processing target: test-target-20250820215716
+2025-08-20 21:57:22 [DEBUG] About to return from Add-BindingsToTarget function
+2025-08-20 21:57:22 [DEBUG] Successfully processed target: test-target-20250820215716 (count: 1)
+2025-08-20 21:57:22 [DEBUG] Completed processing all targets. Success: 1, Total: 1
+2025-08-20 21:57:22 [INFO] Summary: 1/1 targets processed successfully
+2025-08-20 21:57:22 [INFO] DRY-RUN completed. No changes were applied.
+2025-08-20 21:57:22 [INFO] Remove -DryRun flag to apply changes.
+2025-08-20 21:57:22 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:57:22 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:57:22 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820215716, dry-run=False
+2025-08-20 21:57:22 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:57:22 [DEBUG] About to process target: test-target-20250820215716
+2025-08-20 21:57:22 [INFO] Processing target: test-target-20250820215716
+2025-08-20 21:57:24 [DEBUG] Backing up target test-target-20250820215716 to D:\OneProject\symphony\scripts\backups\test-target-20250820215716_20250820_215724.yaml
+2025-08-20 21:57:25 [INFO] Backup created: D:\OneProject\symphony\scripts\backups\test-target-20250820215716_20250820_215724.yaml
+2025-08-20 21:57:25 [INFO] Adding new staging topology 'staging-topology' with 2 bindings to test-target-20250820215716
+2025-08-20 21:57:25 [DEBUG] Generated topology object
+2025-08-20 21:57:25 [INFO] Patching target test-target-20250820215716 with new topology
+2025-08-20 21:57:25 [DEBUG] Patch JSON: [{"path":"/spec/topologies/-","op":"add","value":{"bindings":[{"config":{"getScript":"target-get.sh","applyScript":"get-connected-registry.sh","scriptFolder":"external_distribution/staging","removeScript":"mock-remove.sh"},"provider":"providers.target.script","role":"connected-registry-monitor"},{"config":{"getScript":"target-get.sh","applyScript":"get-staging-status.sh","scriptFolder":"external_distribution/staging","removeScript":"mock-remove.sh"},"provider":"providers.target.script","role":"staging-status-monitor"}],"device":"staging-topology"}}]
+2025-08-20 21:57:26 [INFO] Successfully updated target test-target-20250820215716 with topology
+2025-08-20 21:57:26 [DEBUG] About to check ADD_COMPONENTS flag: False
+2025-08-20 21:57:26 [DEBUG] ADD_COMPONENTS is false, skipping components
+2025-08-20 21:57:26 [DEBUG] Finished topology processing for test-target-20250820215716
+2025-08-20 21:57:26 [DEBUG] Successfully processed target: test-target-20250820215716 (count: 1)
+2025-08-20 21:57:26 [DEBUG] Completed processing all targets. Success: 1, Total: 1
+2025-08-20 21:57:26 [INFO] Summary: 1/1 targets processed successfully
+2025-08-20 21:57:26 [INFO] All targets updated successfully!
+2025-08-20 21:57:27 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:57:27 [DEBUG] Command-line mode: using parameters
+2025-08-20 21:57:27 [DEBUG] Parameters: namespace=target-bindings-test, targets=test-target-20250820215716, dry-run=False
+2025-08-20 21:57:27 [INFO] Processing 1 target(s) in namespace target-bindings-test
+2025-08-20 21:57:27 [DEBUG] About to process target: test-target-20250820215716
+2025-08-20 21:57:27 [INFO] Processing target: test-target-20250820215716
+2025-08-20 21:57:29 [WARN] Staging topology with 2 bindings including connected-registry-monitor already exists in test-target-20250820215716, skipping
+2025-08-20 21:57:29 [DEBUG] Successfully processed target: test-target-20250820215716 (count: 1)
+2025-08-20 21:57:29 [DEBUG] Completed processing all targets. Success: 1, Total: 1
+2025-08-20 21:57:29 [INFO] Summary: 1/1 targets processed successfully
+2025-08-20 21:57:29 [INFO] All targets updated successfully!
+2025-08-20 21:57:52 [INFO] Starting add-target-bindings.ps1 v2.0.0
+2025-08-20 21:57:52 [ERROR] Namespace is required (-Namespace)

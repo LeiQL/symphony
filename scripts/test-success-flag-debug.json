@@ -1,0 +1,8 @@
+{
+  "__namespace": "default",
+  "targets": "staging-targettest960",
+  "image_list": "{\"staging-targettest960/solutiontemp/test1.0.0.2\": [\"demo-image-02:latest\"]}",
+  "timeout_minutes": 1,
+  "steps": "2",
+  "verbose": "true"
+}

@@ -1,0 +1,17 @@
+{
+  "__activation": "unified-activation43",
+  "__activationGeneration": "1",
+  "__campaign": "unified-staging-campaign-v-v32",
+  "__namespace": "default",
+  "__previousStage": "complete-staging-workflow",
+  "__site": "hq",
+  "__stage": "complete-staging-workflow",
+  "__target": null,
+  "acrResourceId": "/subscriptions/af54d2ce-0dcb-48f8-9d2d-ff9c53e48c8d/resourceGroups/lingyunui/providers/Microsoft.ContainerRegistry/registries/lytestcr",
+  "image_list": "{\"staging-targettest958/solutiontemp/test1.0.0.2\": [\"demo-image-02:latest\"], \"staging-targettest958/solutiontemp/test2.0.0.1\": [\"demo-image-02:latest\"]}",
+  "retry_interval": 20,
+  "steps": "2",
+  "targets": "staging-targettest958",
+  "timeout_minutes": 1,
+  "verbose": "true"
+}

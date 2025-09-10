@@ -1,0 +1,8 @@
+{
+  "namespace": "default",
+  "targets": "staging-targettest01",
+  "image_list": {
+    "staging-targettest01-test1.0.0.1": ["demo-image-02:latest"],
+    "staging-targettest01-test2.0.0.1": ["demo-data-03:latest"]
+  }
+}

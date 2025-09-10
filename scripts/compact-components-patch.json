@@ -1,0 +1,1 @@
+[{"op":"replace","path":"/spec/components","value":[{"name":"staging-component","type":"staging","properties":{"imageList":{"stage-sol-5.0.0.2":{"demo-data-02":"latest","web-frontend":"v1.2.3"},"stage-sol-6.1.0.1":{"api-service":"v2.0.1","database":"postgres:14"}}}}]}]

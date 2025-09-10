@@ -1,0 +1,6 @@
+apiVersion: workflow.symphony/v1
+kind: Activation
+metadata:
+  name: three-steps-activation26
+spec:
+  campaign: "three-step-staging-campaign-v-v21"

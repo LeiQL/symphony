@@ -1,0 +1,51 @@
+apiVersion: workflow.symphony/v1
+kind: CampaignContainer
+metadata:
+  name: multi-target-staging-campaign
+spec:
+---
+apiVersion: workflow.symphony/v1
+kind: Campaign
+metadata:
+  name: multi-target-staging-campaign-v-v1
+spec:
+  rootResource: multi-target-staging-campaign
+  firstStage: "add-staging-bindings"
+  selfDriving: true
+  stages:
+    add-staging-bindings:
+      name: "add-staging-bindings"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "external_distribution"
+        scriptEngine: "bash"
+        script: "add-staging-bindings.sh"
+      inputs:
+        namespace: "default"
+        targets: "staging-targettest01,staging-targettest02,staging-targettest03"
+        verbose: "true"
+        image_list: "{\"staging-targettest01-test1.0.0.2\": [\"demo-image-02:latest\"], \"staging-targettest01-test2.0.0.1\": [\"demo-image-02:latest\"], \"staging-targettest02-test1.0.0.3\": [\"demo-image-03:latest\"], \"staging-targettest03-test1.0.0.4\": [\"demo-image-04:latest\"]}"
+      stageSelector: ${{$if($equal($output(add-staging-bindings,status), 200),'pull-staging-results','')}}
+    pull-staging-results:
+      name: "pull-staging-results"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "external_distribution"
+        scriptEngine: "bash"
+        script: "pull-staging-results.sh"
+      inputs:
+        namespace: "default"
+        targets: "staging-targettest01,staging-targettest02,staging-targettest03"
+        solutions: "staging-targettest01-test1.0.0.2,staging-targettest01-test2.0.0.1,staging-targettest02-test1.0.0.3,staging-targettest03-test1.0.0.4"
+      stageSelector: ${{$if($equal($output(pull-staging-results,status), 200),'cleanup-staging-targets','')}}
+    cleanup-staging-targets:
+      name: "cleanup-staging-targets"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "external_distribution"
+        scriptEngine: "bash"
+        script: "cleanup-staging-components.sh"
+      inputs:
+        namespace: "default"
+        targets: "staging-targettest01,staging-targettest02,staging-targettest03"
+        solution_images: "staging-targettest01-test1.0.0.2,staging-targettest01-test2.0.0.1,staging-targettest02-test1.0.0.3,staging-targettest03-test1.0.0.4"

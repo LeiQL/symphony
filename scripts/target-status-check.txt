@@ -595,3 +595,17 @@ Python was not found; run without arguments to install from the Microsoft Store,
 2025-07-15 16:15:41 [INFO] ✅ Target target10 status verification PASSED
 2025-07-15 16:15:41 [INFO] Summary: 1/1 targets passed status verification
 2025-07-15 16:15:41 [INFO] 🎉 All targets passed status verification!
+2025-09-01 16:25:26 [INFO] Starting check-target-status.sh v1.0.0
+2025-09-01 16:25:26 [ERROR] Unknown argument: -namespace
+2025-09-01 16:27:34 [INFO] Starting check-target-status.sh v1.0.0
+2025-09-01 16:27:34 [ERROR] Unknown argument: -namespace
+2025-09-01 16:28:13 [INFO] Starting check-target-status.sh v1.0.0
+2025-09-01 16:28:13 [ERROR] Unknown argument: -namespace
+2025-09-01 16:28:48 [INFO] Starting check-target-status.sh v1.0.0
+2025-09-01 16:28:48 [ERROR] Unknown argument: --solution-images
+2025-09-01 16:30:01 [INFO] Starting check-target-status.sh v1.0.0
+2025-09-01 16:30:01 [ERROR] Unknown argument: --solution-images
+2025-09-01 16:30:25 [INFO] Starting check-target-status.sh v1.0.0
+2025-09-01 16:30:25 [ERROR] Unknown argument: --solution-images
+2025-09-01 16:30:36 [INFO] Starting check-target-status.sh v1.0.0
+2025-09-01 16:30:36 [ERROR] Unknown argument: --solution-images

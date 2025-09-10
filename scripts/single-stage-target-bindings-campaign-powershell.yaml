@@ -7,7 +7,7 @@ spec:
 apiVersion: workflow.symphony/v1
 kind: Campaign
 metadata:
-  name: simple-target-bindings-campaign-v-version4
+  name: simple-target-bindings-campaign-v-version33
 spec:
   rootResource: simple-target-bindings-campaign
   firstStage: "add-topologies-and-components"
@@ -17,11 +17,11 @@ spec:
       provider: "providers.stage.script"
       config:
         scriptFolder: "external_distribution"
-        scriptEngine: "bash"
-        script: "add-target-bindings.sh"
+        scriptEngine: "powershell"
+        script: "addexc.ps1"
       inputs:
         namespace: "default"
-        targets: "helm-target3"
+        targets: "helm-target4"
         add_components: "true"
         verbose: "true"
         image_list: "demo-image-05:latest"

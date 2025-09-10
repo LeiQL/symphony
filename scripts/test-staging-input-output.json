@@ -1,0 +1,1 @@
+{"status":200,"message":"Processed 0/1 staging workflows","targets_processed":0,"total_targets":1,"solutionversion_succeeded":0,"solutionversion_failed":2,"succeeded_solutions":"","failed_solutions":"staging-targettest02-test1.0.0.3,staging-targettest02-test2.0.0.2"}

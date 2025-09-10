@@ -1,0 +1,43 @@
+apiVersion: solution.symphony/v1
+kind: Target
+metadata:
+  name: staging-targettest959
+  namespace: default
+spec:
+  displayName: "Test Target for Monitoring Fix"
+  scope: "test"
+  properties: {}
+  components:
+  - name: staging-component
+    type: "yaml.k8s"
+    properties:
+      resource:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: test-deployment
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: test
+          template:
+            metadata:
+              labels:
+                app: test
+            spec:
+              containers:
+              - name: test-container
+                image: demo-image-02:latest
+status:
+  properties:
+    status: "Succeeded"
+    staging-component: |
+      {
+        "Status": "Succeeded",
+        "Message": "Successfully checked the download status of images. Total images checked: 1, fully downloaded: 1.",
+        "StagedImages": {
+          "staging-targettest959/solutiontemp/test1.0.0.2": ["demo-image-02:latest"],
+          "staging-targettest959/solutiontemp/test2.0.0.1": ["demo-image-02:latest"]
+        }
+      }

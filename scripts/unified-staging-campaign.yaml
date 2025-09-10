@@ -1,0 +1,29 @@
+apiVersion: workflow.symphony/v1
+kind: CampaignContainer
+metadata:
+  name: unified-staging-campaign
+spec:
+---
+apiVersion: workflow.symphony/v1
+kind: Campaign
+metadata:
+  name: unified-staging-campaign-v-v462
+spec:
+  rootResource: unified-staging-campaign
+  firstStage: "complete-staging-workflow"
+  selfDriving: true
+  stages:
+    complete-staging-workflow:
+      name: "complete-staging-workflow"
+      provider: "providers.stage.script"
+      config:
+        scriptFolder: "external_distribution/staging"
+        scriptEngine: "bash"
+        script: "onlymonitor.sh"
+      inputs:
+        targets: "staging-targettest961"
+        verbose: "true"
+        timeout_minutes: 30
+        retry_interval: 10
+        acrResourceId: "/subscriptions/af54d2ce-0dcb-48f8-9d2d-ff9c53e48c8d/resourceGroups/lingyunui/providers/Microsoft.ContainerRegistry/registries/lytestcr"
+        image_list: "{\"staging-targettest961/solutiontemp/test1.0.0.2\": [\"demo-image-02:latest\"], \"staging-targettest961/solutiontemp/test2.0.0.1\": [\"demo-image-02:latest\"]}"
