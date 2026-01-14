@@ -92,6 +92,10 @@ receivers:
         from: body["caller"]
         to: attributes["caller"]
       - type: move
+        if: 'body["instance"] != nil'
+        from: body["instance"]
+        to: attributes["instance"]
+      - type: move
         if: 'body["level"] != nil'
         from: body["level"]
         to: attributes["level"]
@@ -262,6 +266,29 @@ processors:
     # 25% of limit up to 2G
     spike_limit_mib: 512
     check_interval: 5s
+  
+  filter/userAudits:
+    logs:
+      log_record:
+        #- 'not IsMatch(attributes["log"], "^.*activity.*$")'
+        - attributes["type"] == nil or attributes["type"] != "userAudits"
+  filter/userDiagnostics:
+    logs:
+      log_record:
+        #- 'not IsMatch(attributes["log"], "^.*diagnostics.*$")'
+        - attributes["type"] == nil or attributes["type"] != "userDiagnostics
+  transform/userAudits:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        statements:
+          - set(instrumentation_scope.name, "userAudits")
+  transform/userDiagnostics:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        statements:
+          - set(instrumentation_scope.name, "userDiagnostics")
 
 exporters:
   otlp/default:
@@ -283,4 +310,16 @@ service:
       receivers: [filelog]
       processors: [memory_limiter, batch, k8sattributes, resource/rename]
       exporters: [otlp/default]
+      # exporters: [debug]
+    
+    logs/userAudits:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, filter/userAudits, transform/userAudits]
+      exporters: [otlp/userAudits]
+      # exporters: [debug]
+
+    logs/userDiagnostics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, filter/userDiagnostics, transform/userDiagnostics]
+      exporters: [otlp/userDiagnostics]
       # exporters: [debug]
